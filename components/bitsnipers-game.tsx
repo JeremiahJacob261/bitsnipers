@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useEffect, useRef, useState } from "react"
-import { supabase } from "@/lib/supabase"
 
 // --- Simple inline SVG icons (stroke inherits currentColor) ---
 const IconTrophy = (props: React.SVGProps<SVGSVGElement>) => (
@@ -79,6 +78,14 @@ const IconShirt = (props: React.SVGProps<SVGSVGElement>) => (
 )
 
 // --- Demo data to drive the UI ---
+type UserData = {
+  email: string
+  profile: { username?: string | null; display_name?: string | null } | null
+  wallet: { usd_cents?: number; sol_lamports?: number }
+  friends: Array<{ friend_email: string; created_at: string }>
+  leaderboard: Array<{ email: string; name: string; total_usd: number; total_sol: number }>
+  stats: { global_usd: number; global_sol: number }
+}
 const demoUser = {
   name: "Sniper",
   country: "US",
@@ -113,10 +120,14 @@ const currency = (n: number) => n.toLocaleString(undefined, { style: "currency",
 export default function BitSnipersGame() {
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
+  const [isVerified, setIsVerified] = useState(false)
+  const [username, setUsername] = useState("")
   const [audioUnlocked, setAudioUnlocked] = useState(false)
   const [confirmationCode, setConfirmationCode] = useState(["", "", "", "", "", ""])
   const [userEmail, setUserEmail] = useState("")
   const [authLoading, setAuthLoading] = useState(false)
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [soundOn, setSoundOn] = useState(true)
   const hoverSoundRef = useRef<HTMLAudioElement>(null)
   const clickSoundRef = useRef<HTMLAudioElement>(null)
 
@@ -149,6 +160,17 @@ export default function BitSnipersGame() {
     return () => clearInterval(interval)
   }, [])
 
+  // Hydrate user data if session cookie exists
+  useEffect(() => {
+    const hydrate = async () => {
+      try {
+        const res = await fetch('/api/me', { method: 'GET', credentials: 'include' })
+        if (res.ok) setUserData(await res.json())
+      } catch {}
+    }
+    hydrate()
+  }, [])
+
   const unlockAudio = () => {
     if (!audioUnlocked && hoverSoundRef.current && clickSoundRef.current) {
       hoverSoundRef.current.play().catch(() => {})
@@ -177,6 +199,14 @@ export default function BitSnipersGame() {
     }
   }
 
+  const ensureAuthOrOpenLogin = () => {
+    if (!userData) {
+      setIsLoginOpen(true)
+      return false
+    }
+    return true
+  }
+
   const handleButtonInteraction = (e: React.MouseEvent) => {
     unlockAudio()
     playClickSound()
@@ -186,20 +216,23 @@ export default function BitSnipersGame() {
     playHoverSound()
   }
 
-  // --- Auth helpers (Supabase OTP) ---
+  // --- Auth helpers (custom OTP) ---
   const requestMagicLink = async () => {
     if (!userEmail) return
     try {
       setAuthLoading(true)
-      const { error } = await supabase.auth.signInWithOtp({
-        email: userEmail,
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}` : undefined,
-        },
+      const res = await fetch('/api/auth/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail }),
       })
-      if (error) throw error
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to send code')
+      }
       setIsLoginOpen(false)
+      setIsVerified(false)
+      setConfirmationCode(["", "", "", "", "", ""]) 
       setIsConfirmationOpen(true)
     } catch (e) {
       console.error('Email OTP request failed', e)
@@ -213,15 +246,43 @@ export default function BitSnipersGame() {
     if (!userEmail || code.length !== 6) return
     try {
       setAuthLoading(true)
-      const { error } = await supabase.auth.verifyOtp({
-        email: userEmail,
-        token: code,
-        type: 'email',
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, code }),
       })
-      if (error) throw error
-      setIsConfirmationOpen(false)
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Invalid code')
+      }
+      setIsVerified(true)
+      try {
+        const me = await fetch('/api/me', { method: 'GET', credentials: 'include' })
+        if (me.ok) setUserData(await me.json())
+      } catch {}
     } catch (e) {
       console.error('Verify OTP failed', e)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const saveUsername = async () => {
+    if (!username || username.trim().length < 3) return
+    try {
+      setAuthLoading(true)
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim() }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Failed to save username')
+      }
+      setIsConfirmationOpen(false)
+    } catch (e) {
+      console.error('Save username failed', e)
     } finally {
       setAuthLoading(false)
     }
@@ -584,21 +645,53 @@ export default function BitSnipersGame() {
         {/* Top Bar */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-2">
-            <img src="images/logo.png" alt="logo" className="h-20 mx-auto mb-2" />
+            <img src="images/icon.png" alt="logo" className="h-20 mx-auto mb-2" />
             <span className="text-orange-400 font-bold">
-              Welcome, <span className="inline text-white">{demoUser.name}</span>
+              Welcome, <span className="inline text-white">{userData?.profile?.username || userData?.profile?.display_name || demoUser.name}</span>
             </span>
           </div>
           <img src="images/logo2.png" alt="BitSnipers" className="h-20 mx-auto mb-2" />
-          <button
-            className="game-btn"
-            style={{ width: "auto" }}
-            onClick={() => setIsLoginOpen(true)}
-            onMouseEnter={handleButtonHover}
-            onMouseDown={handleButtonInteraction}
-          >
-            Login
-          </button>
+          {userData ? (
+            <div className="flex items-center gap-2">
+              <button className="btn-secondary py-2 px-3 rounded-lg font-medium" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>
+                Settings
+              </button>
+              <button className="btn-secondary py-2 px-3 rounded-lg font-medium" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>
+                Profile
+              </button>
+              <button
+                className="btn-secondary py-2 px-3 rounded-lg font-medium"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e); setSoundOn(!soundOn) }}
+                aria-pressed={soundOn}
+                title={soundOn ? 'Mute' : 'Unmute'}
+              >
+                {soundOn ? '🔊' : '🔈'}
+              </button>
+              <button
+                className="btn-secondary py-2 px-3 rounded-lg font-medium"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={async (e) => {
+                  handleButtonInteraction(e)
+                  await fetch('/api/auth/logout', { method: 'POST' })
+                  setUserData(null)
+                  setIsVerified(false)
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              className="game-btn"
+              style={{ width: "auto" }}
+              onClick={() => setIsLoginOpen(true)}
+              onMouseEnter={handleButtonHover}
+              onMouseDown={handleButtonInteraction}
+            >
+              Login
+            </button>
+          )}
         </div>
 
         {/* Main Content Grid */}
@@ -616,10 +709,10 @@ export default function BitSnipersGame() {
               </div>
 
               <div className="space-y-3 mb-4">
-                {demoLeaderboard.map((row, idx) => (
-                  <div key={row.name + idx} className="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+                {(userData?.leaderboard || demoLeaderboard).map((row: any, idx: number) => (
+                  <div key={(row.email || row.name) + idx} className="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
                     <span className="font-medium">{row.name}</span>
-                    <span className="text-green-400 font-bold">{currency(row.winnings)}</span>
+                    <span className="text-green-400 font-bold">{currency((row.total_usd ?? row.winnings) || 0)}</span>
                   </div>
                 ))}
               </div>
@@ -628,7 +721,7 @@ export default function BitSnipersGame() {
                 className="game-btn"
                 id="grey-btn"
                 onMouseEnter={handleButtonHover}
-                onMouseDown={handleButtonInteraction}
+                onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
               >
                 View Full Leaderboard
               </button>
@@ -649,27 +742,46 @@ export default function BitSnipersGame() {
                   </svg>
                   <span className="text-gray-400">Refresh</span>
                 </div>
-                <span className="text-green-400">{demoFriends.filter(f => f.playing).length} playing</span>
+                <span className="text-green-400">{userData ? (userData.friends?.length || 0) : demoFriends.filter(f => f.playing).length} playing</span>
               </div>
 
               <div className="space-y-2 py-2">
-                {demoFriends.length === 0 ? (
-                  <div className="text-center py-8">
-                    <IconUser className="w-10 h-10 mx-auto mb-2" />
-                    <p className="text-gray-400">No friends... add some!</p>
-                  </div>
-                ) : (
-                  demoFriends.map((f) => (
-                    <div key={f.name} className="flex items-center justify-between p-3 bg-gray-800/60 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <IconUser className="w-5 h-5" />
-                        <span className="font-medium">{f.name}</span>
-                      </div>
-                      <span className={f.playing ? "text-green-400" : "text-gray-400"}>
-                        {f.playing ? "Playing" : "Offline"}
-                      </span>
+                {!userData ? (
+                  demoFriends.length === 0 ? (
+                    <div className="text-center py-8">
+                      <IconUser className="w-10 h-10 mx-auto mb-2" />
+                      <p className="text-gray-400">No friends... add some!</p>
                     </div>
-                  ))
+                  ) : (
+                    demoFriends.map((f) => (
+                      <div key={f.name} className="flex items-center justify-between p-3 bg-gray-800/60 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <IconUser className="w-5 h-5" />
+                          <span className="font-medium">{f.name}</span>
+                        </div>
+                        <span className={f.playing ? 'text-green-400' : 'text-gray-400'}>
+                          {f.playing ? 'Playing' : 'Offline'}
+                        </span>
+                      </div>
+                    ))
+                  )
+                ) : (
+                  userData.friends.length === 0 ? (
+                    <div className="text-center py-8">
+                      <IconUser className="w-10 h-10 mx-auto mb-2" />
+                      <p className="text-gray-400">No friends yet.</p>
+                    </div>
+                  ) : (
+                    userData.friends.map((f) => (
+                      <div key={f.friend_email} className="flex items-center justify-between p-3 bg-gray-800/60 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <IconUser className="w-5 h-5" />
+                          <span className="font-medium">{f.friend_email}</span>
+                        </div>
+                        <span className="text-gray-400">since {new Date(f.created_at).toLocaleDateString()}</span>
+                      </div>
+                    ))
+                  )
                 )}
               </div>
 
@@ -677,7 +789,7 @@ export default function BitSnipersGame() {
                 className="game-btn"
                 id="grey-btn"
                 onMouseEnter={handleButtonHover}
-                onMouseDown={handleButtonInteraction}
+                onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
               >
                 Add Friends
               </button>
@@ -688,7 +800,7 @@ export default function BitSnipersGame() {
               className="game-btn"
               id="discord"
               onMouseEnter={handleButtonHover}
-              onMouseDown={handleButtonInteraction}
+              onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
             >
               <svg
                 stroke="currentColor"
@@ -793,7 +905,7 @@ export default function BitSnipersGame() {
               </div>
 
               {/* Join Game Button */}
-              <button className="game-btn flex items-center justify-center gap-2" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>
+              <button className="game-btn flex items-center justify-center gap-2" onMouseEnter={handleButtonHover} onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}>
                 <IconPlay className="w-4 h-4" />
                 <span>JOIN GAME</span>
               </button>
@@ -822,7 +934,7 @@ export default function BitSnipersGame() {
                   <p className="text-gray-400 text-sm">{demoStats.playersInGame} Players In Game</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-gray-400 text-sm">{currency(demoStats.globalWinnings)} Global Player Winnings</p>
+                  <p className="text-gray-400 text-sm">{currency(userData ? userData.stats.global_usd : demoStats.globalWinnings)} Global Player Winnings</p>
                 </div>
               </div>
 
@@ -850,8 +962,8 @@ export default function BitSnipersGame() {
               </div>
 
               <div className="text-center mb-4">
-                <div className="text-3xl font-bold text-green-400 mb-1">{currency(demoWallet.usd)}</div>
-                <div className="text-gray-400">{demoWallet.sol.toFixed(4)} SOL</div>
+                <div className="text-3xl font-bold text-green-400 mb-1">{userData ? currency((userData.wallet.usd_cents || 0) / 100) : currency(demoWallet.usd)}</div>
+                <div className="text-gray-400">{userData ? (((userData.wallet.sol_lamports || 0) / 1_000_000_000).toFixed(4)) : demoWallet.sol.toFixed(4)} SOL</div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -859,7 +971,7 @@ export default function BitSnipersGame() {
                   className="game-btn"
                   id="addfunds"
                   onMouseEnter={handleButtonHover}
-                  onMouseDown={handleButtonInteraction}
+                  onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
                 >
                   Add Funds
                 </button>
@@ -867,7 +979,7 @@ export default function BitSnipersGame() {
                   className="game-btn"
                   id="cashout"
                   onMouseEnter={handleButtonHover}
-                  onMouseDown={handleButtonInteraction}
+                  onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
                 >
                   Cash Out
                 </button>
@@ -899,7 +1011,7 @@ export default function BitSnipersGame() {
                 className="game-btn"
                 id="grey-btn"
                 onMouseEnter={handleButtonHover}
-                onMouseDown={handleButtonInteraction}
+                onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
               >
                 Change Appearance
               </button>
@@ -977,7 +1089,7 @@ export default function BitSnipersGame() {
           </div>
         </div>
 
-        {/* Email Confirmation Modal */}
+  {/* Email Confirmation Modal */}
         <div
           className={`overlay ${isConfirmationOpen ? "show" : ""}`}
           onClick={(e) => {
@@ -1010,69 +1122,102 @@ export default function BitSnipersGame() {
               </svg>
             </button>
 
-            {/* Mail Icon */}
-            <div className="flex justify-center mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-15 h-10 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M2.25 4.5A2.25 2.25 0 014.5 2.25h15a2.25 2.25 0 012.25 2.25v15a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 012.25 19.5v-15zm2.25 0L12 12.75 19.5 4.5h-15zM19.5 19.5V7.5l-7.5 7.5L4.5 7.5v12h15z"/>
-              </svg>
-            </div>
+            {isVerified ? (
+              <div>
+                {/* Success Icon */}
+                <div className="flex justify-center mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
+                  </svg>
+                </div>
+                <h2 className="text-center text-lg font-semibold mb-1">You're in!</h2>
+                <p className="text-center text-gray-400 text-sm mb-6">Your email has been verified. Pick a username.</p>
 
-            {/* Title */}
-            <h2 className="text-center text-lg font-semibold mb-2 py-4">Enter confirmation code</h2>
-            <p className="text-center text-gray-400 text-sm mb-6">
-              Please check <span className="text-white font-medium">{userEmail}</span> for an email from <span className="text-white">BitSnipers</span> and enter your code below.
-            </p>
-
-            {/* Code Inputs */}
-            <div className="flex justify-between gap-2 mb-4">
-        {confirmationCode.map((digit, i) => (
                 <input
-                  key={i}
-                  id={`code-${i}`}
                   type="text"
-                  value={digit}
-                  onChange={(e) => {
-                    if (/^[0-9]?$/.test(e.target.value)) {
-                      const newCode = [...confirmationCode];
-                      newCode[i] = e.target.value;
-                      setConfirmationCode(newCode);
-                      if (e.target.value && i < 5) {
-                        const nextInput = document.getElementById(`code-${i + 1}`);
-                        if (nextInput) (nextInput as HTMLInputElement).focus();
-                      }
-                    }
-                  }}
-          inputMode="numeric"
-                  maxLength={1}
-                  className="w-12 h-12 text-center text-lg font-bold rounded-lg bg-[#2a2a2a] border border-gray-600 focus:border-yellow-400 focus:outline-none"
-                  onMouseEnter={handleButtonHover}
+                  placeholder="Choose a username"
+                  className="w-full p-2 rounded bg-[#2a2a2a] border border-gray-600 mb-3"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
-              ))}
-            </div>
+                <button
+                  className="game-btn w-full"
+                  id="submit-btn"
+                  onMouseEnter={handleButtonHover}
+                  onMouseDown={(e) => { handleButtonInteraction(e); saveUsername() }}
+                  disabled={authLoading || username.trim().length < 3}
+                >
+                  {authLoading ? 'Saving…' : 'Save username'}
+                </button>
+              </div>
+            ) : (
+              <div>
+                {/* Mail Icon */}
+                <div className="flex justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-15 h-10 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M2.25 4.5A2.25 2.25 0 014.5 2.25h15a2.25 2.25 0 012.25 2.25v15a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 012.25 19.5v-15zm2.25 0L12 12.75 19.5 4.5h-15zM19.5 19.5V7.5l-7.5 7.5L4.5 7.5v12h15z"/>
+                  </svg>
+                </div>
 
-            {/* Submit Button */}
-            <button
-              className="game-btn w-full mb-4 my-2"
-              id="submit-btn"
-              onMouseEnter={handleButtonHover}
-              onMouseDown={(e) => { handleButtonInteraction(e); verifyCode() }}
-              disabled={authLoading}
-            >
-              {authLoading ? 'Verifying…' : 'Verify Code'}
-            </button>
+                {/* Title */}
+                <h2 className="text-center text-lg font-semibold mb-2 py-4">Enter confirmation code</h2>
+                <p className="text-center text-gray-400 text-sm mb-6">
+                  Please check <span className="text-white font-medium">{userEmail}</span> for an email from <span className="text-white">BitSnipers</span> and enter your code below.
+                </p>
 
-            {/* Resend Code */}
-            <p className="text-center text-sm text-gray-400 my-4">
-              Didn't get an email?{" "}
-              <button
-                className="text-yellow-400 hover:underline"
-                onMouseEnter={handleButtonHover}
-                onMouseDown={(e) => { handleButtonInteraction(e); requestMagicLink() }}
-                disabled={authLoading}
-              >
-                Resend code
-              </button>
-            </p>
+                {/* Code Inputs */}
+                <div className="flex justify-between gap-2 mb-4">
+                  {confirmationCode.map((digit, i) => (
+                    <input
+                      key={i}
+                      id={`code-${i}`}
+                      type="text"
+                      value={digit}
+                      onChange={(e) => {
+                        if (/^[0-9]?$/.test(e.target.value)) {
+                          const newCode = [...confirmationCode];
+                          newCode[i] = e.target.value;
+                          setConfirmationCode(newCode);
+                          if (e.target.value && i < 5) {
+                            const nextInput = document.getElementById(`code-${i + 1}`);
+                            if (nextInput) (nextInput as HTMLInputElement).focus();
+                          }
+                        }
+                      }}
+                      inputMode="numeric"
+                      maxLength={1}
+                      className="w-12 h-12 text-center text-lg font-bold rounded-lg bg-[#2a2a2a] border border-gray-600 focus:border-yellow-400 focus:outline-none"
+                      onMouseEnter={handleButtonHover}
+                    />
+                  ))}
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  className="game-btn w-full mb-4 my-2"
+                  id="submit-btn"
+                  onMouseEnter={handleButtonHover}
+                  onMouseDown={(e) => { handleButtonInteraction(e); verifyCode() }}
+                  disabled={authLoading}
+                >
+                  {authLoading ? 'Verifying…' : 'Verify Code'}
+                </button>
+
+                {/* Resend Code */}
+                <p className="text-center text-sm text-gray-400 my-4">
+                  Didn't get an email?{" "}
+                  <button
+                    className="text-yellow-400 hover:underline"
+                    onMouseEnter={handleButtonHover}
+                    onMouseDown={(e) => { handleButtonInteraction(e); requestMagicLink() }}
+                    disabled={authLoading}
+                  >
+                    Resend code
+                  </button>
+                </p>
+              </div>
+            )}
 
             {/* Footer */}
             <div className="flex justify-center items-center mt-6 text-xs text-gray-500">
