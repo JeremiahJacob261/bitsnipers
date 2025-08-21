@@ -221,6 +221,15 @@ export default function BitSnipersGame() {
   const [friendsTab, setFriendsTab] = useState<
     "friends" | "blocked" | "pending"
   >("friends");
+  const [isAddFundsOpen, setIsAddFundsOpen] = useState(false);
+  const [isCashOutOpen, setIsCashOutOpen] = useState(false);
+  const [cashOutAmount, setCashOutAmount] = useState(0);
+  const [cashOutCurrency, setCashOutCurrency] = useState<"USD" | "SOL">("USD");
+  const [destAddress, setDestAddress] = useState("");
+  const [isAffiliateOpen, setIsAffiliateOpen] = useState(false);
+  const [affiliateLoading, setAffiliateLoading] = useState(false);
+  const [affiliateCode, setAffiliateCode] = useState("");
+  const [affiliateData, setAffiliateData] = useState<any | null>(null);
   const hoverSoundRef = useRef<HTMLAudioElement>(null);
   const clickSoundRef = useRef<HTMLAudioElement>(null);
 
@@ -303,10 +312,11 @@ export default function BitSnipersGame() {
       clickSoundRef.current.play().catch(() => {});
     }
   };
-
+  // if the function below returns true, that is there is user data and the user is logged
   const ensureAuthOrOpenLogin = () => {
     if (!userData) {
       setIsLoginOpen(true);
+      //the user is logged in
       return false;
     }
     return true;
@@ -395,6 +405,62 @@ export default function BitSnipersGame() {
       setAuthLoading(false);
     }
   };
+
+  // Affiliate fetch
+  useEffect(() => {
+    if (!isAffiliateOpen) return;
+    const load = async () => {
+      if (!ensureAuthOrOpenLogin()) return;
+      try {
+        setAffiliateLoading(true);
+        const res = await fetch('/api/affiliate', { credentials: 'include' });
+        if (res.ok) {
+          const json = await res.json();
+          setAffiliateData(json.affiliate || null);
+          if (json.affiliate?.code) setAffiliateCode(json.affiliate.code);
+        }
+      } finally {
+        setAffiliateLoading(false);
+      }
+    };
+    load();
+  }, [isAffiliateOpen]);
+
+  const saveAffiliateCode = async () => {
+    if (!affiliateCode.trim()) return;
+    try {
+      setAffiliateLoading(true);
+      const res = await fetch('/api/affiliate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: affiliateCode.trim() }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setAffiliateData({ ...(affiliateData || {}), code: json.code });
+      } else {
+        console.error('Affiliate save failed');
+      }
+    } finally {
+      setAffiliateLoading(false);
+    }
+  };
+
+  // --- Wallet helpers ---
+  const userUsdBalance = userData
+    ? (userData.wallet.usd_cents || 0) / 100
+    : demoWallet.usd;
+  const userSolBalance = userData
+    ? (userData.wallet.sol_lamports || 0) / 1_000_000_000
+    : demoWallet.sol;
+  const minCashOut = 0.21; // $0.20 + $0.01 fee example
+  const cashOutPercent = userUsdBalance
+    ? Math.min(100, (cashOutAmount / userUsdBalance) * 100)
+    : 0;
+  const insufficient = userUsdBalance < minCashOut;
+  const amountInvalid =
+    cashOutAmount <= 0 || cashOutAmount > userUsdBalance || cashOutAmount < minCashOut;
+  const addressInvalid = destAddress.trim().length < 32; // naive Solana address check
 
   return (
     <>
@@ -779,7 +845,7 @@ export default function BitSnipersGame() {
           {userData ? (
             <div className="flex items-center gap-2">
               <button
-                className="btn-secondary py-2 px-3 rounded-lg font-medium flex items-center gap-2"
+                className="bg-neutral-800 py-2 px-3 rounded-lg font-medium flex items-center gap-2"
                 onMouseEnter={handleButtonHover}
                 onMouseDown={(e) => {
                   if (!ensureAuthOrOpenLogin()) return;
@@ -1160,7 +1226,11 @@ export default function BitSnipersGame() {
               <button
                 className="game-btn"
                 onMouseEnter={handleButtonHover}
-                onMouseDown={handleButtonInteraction}
+                onMouseDown={(e) => {
+                  if (!ensureAuthOrOpenLogin()) return;
+                  handleButtonInteraction(e);
+                  setIsAffiliateOpen(true);
+                }}
               >
                 Manage Affiliate
               </button>
@@ -1209,6 +1279,7 @@ export default function BitSnipersGame() {
                   onMouseDown={(e) => {
                     if (!ensureAuthOrOpenLogin()) return;
                     handleButtonInteraction(e);
+                    setIsAddFundsOpen(true);
                   }}
                 >
                   Add Funds
@@ -1220,6 +1291,7 @@ export default function BitSnipersGame() {
                   onMouseDown={(e) => {
                     if (!ensureAuthOrOpenLogin()) return;
                     handleButtonInteraction(e);
+                    setIsCashOutOpen(true);
                   }}
                 >
                   Cash Out
@@ -1556,6 +1628,341 @@ export default function BitSnipersGame() {
           </div>
         </div>
       </div>
+      {/* Add Funds Modal */}
+      {isAddFundsOpen && (
+        <div
+          className="overlay show"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAddFundsOpen(false);
+          }}
+        >
+          <div className="bg-[#1c1c1c] text-white w-[360px] rounded-3xl p-6 relative shadow-xl flex flex-col gap-4">
+            <button
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white"
+              onClick={() => setIsAddFundsOpen(false)}
+              onMouseEnter={handleButtonHover}
+              onMouseDown={handleButtonInteraction}
+            >
+              ✕
+            </button>
+            <div className="p-5">
+              <h2 className="text-sm font-semibold text-center mb-2 py-3">
+                Add funds to your BitSnipers wallet
+              </h2>
+              <div className="flex flex-col gap-3 mt-2">
+                <button
+                  className="bg-neutral-900 border-2 cursor-pointer border-neutral-700 text-white py-3 px-4 rounded-lg flex items-center justify-between w-full hover:bg-neutral-700"
+                  onMouseEnter={handleButtonHover}
+                  onMouseDown={handleButtonInteraction}
+                >
+                  <span className="text-neutral-300 flex items-center gap-2 text-sm font-medium">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-4 h-4"
+                    >
+                      <path d="M21 10H7" />
+                      <path d="M21 6H3" />
+                      <path d="M21 14H3" />
+                      <path d="M21 18H7" />
+                    </svg>
+                    Transfer from an exchange
+                  </span>
+                </button>
+                <button
+                  className="bg-neutral-900 border-2 border-neutral-700 cursor-pointer text-white py-3 px-4 rounded-lg flex items-center justify-between w-full hover:bg-neutral-700"
+                  onMouseEnter={handleButtonHover}
+                  onMouseDown={handleButtonInteraction}
+                >
+                  <span className="flex items-center gap-2 text-neutral-300 text-sm font-medium">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-4 h-4"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <path d="M8 8h8v8H8z" />
+                    </svg>
+                    Receive funds
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2 text-center text-[10px] text-neutral-500 flex items-center justify-center gap-1">
+              <span>Protected by</span>
+              <span className="font-semibold tracking-wide">BitSnipers</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Affiliate Modal */}
+      {isAffiliateOpen && (
+        <div
+          className="overlay show"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsAffiliateOpen(false);
+          }}
+        >
+          <div className="bg-[#0f0f0f] text-white w-[840px] max-w-[95vw] rounded-xl p-6 relative shadow-2xl flex flex-col gap-6 border border-neutral-700/60">
+            <button
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white"
+              onClick={() => setIsAffiliateOpen(false)}
+              onMouseEnter={handleButtonHover}
+              onMouseDown={handleButtonInteraction}
+            >
+              ✕
+            </button>
+            <h2 className="text-sm tracking-wide font-semibold flex items-center gap-2 text-yellow-400">
+                <svg
+                viewBox="0 0 24 24"
+                className="w-4 h-4 text-yellow-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                >
+                <circle cx="9" cy="8" r="4" />
+                <path d="M15 21v-2a5 5 0 0 0-5-5H8a5 5 0 0 0-5 5v2" />
+                <circle cx="18" cy="10" r="3" />
+                <path d="M23 21v-2a4.5 4.5 0 0 0-4.5-4.5H17" />
+                </svg>
+              AFFILIATE PROGRAM
+            </h2>
+            <div className="space-y-4 bg-neutral-900/40 border border-neutral-800 rounded-lg p-4">
+              <label className="block text-xs font-medium mb-1 text-neutral-300">
+                Your Affiliate Code
+              </label>
+              <input
+                placeholder="your-code"
+                value={affiliateCode}
+                disabled={!!affiliateData?.code && affiliateData?.code !== affiliateCode}
+                onChange={(e) => setAffiliateCode(e.target.value)}
+                className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-500"
+              />
+              <div>
+                <button
+                  className="game-btn !m-0 px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  id="submit-btn"
+                  disabled={affiliateLoading || !affiliateCode.trim()}
+                  onMouseEnter={handleButtonHover}
+                  onMouseDown={(e) => {
+                    handleButtonInteraction(e);
+                    saveAffiliateCode();
+                  }}
+                >
+                  {affiliateLoading ? 'Saving…' : 'Save Code'}
+                </button>
+              </div>
+              <div className="pt-2">
+                <p className="text-xs text-neutral-500 mb-1">Share Link</p>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="truncate">
+                    {`https://damnbruh.com/?ref=${affiliateData?.code || affiliateCode || 'yourcode'}`}
+                  </span>
+                  <button
+                    className="btn-secondary px-2 py-1 rounded text-[10px]"
+                    onMouseDown={(e) => {
+                      handleButtonInteraction(e);
+                      navigator.clipboard.writeText(`https://damnbruh.com/?ref=${affiliateData?.code || affiliateCode}`);
+                    }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="bg-neutral-900/40 border border-neutral-800 rounded-lg p-4">
+              <h3 className="text-xs uppercase tracking-wide text-neutral-400 mb-4">Stats</h3>
+              <div className="grid grid-cols-5 gap-4 text-xs">
+                <div className="flex flex-col gap-1">
+                  <span className="text-neutral-400">Percent Fee</span>
+                  <span className="font-semibold">{affiliateData?.percent_fee ?? 0}%</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-neutral-400">Total Users</span>
+                  <span className="font-semibold">{affiliateData?.total_users ?? 0}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-neutral-400">Total Earnings</span>
+                  <span className="font-semibold text-yellow-400">{((affiliateData?.total_sol_lamports || 0) / 1_000_000_000).toFixed(4)} SOL</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-neutral-400">Earnings (USD)</span>
+                  <span className="font-semibold">{currency(((affiliateData?.total_usd_cents || 0) / 100))}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-neutral-400">Games Played</span>
+                  <span className="font-semibold">{affiliateData?.games_played ?? 0}</span>
+                </div>
+              </div>
+            </div>
+            <p className="text-[10px] text-neutral-600 text-center">Stats update periodically. Demo environment only.</p>
+          </div>
+        </div>
+      )}
+      {/* Cash Out Modal */}
+      {isCashOutOpen && (
+        <div
+          className="overlay show"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsCashOutOpen(false);
+          }}
+        >
+          <div className="bg-[#101010] text-white w-[480px] rounded-xl p-6 relative shadow-2xl flex flex-col gap-5 border border-neutral-700/60">
+            <button
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white"
+              onClick={() => setIsCashOutOpen(false)}
+              onMouseEnter={handleButtonHover}
+              onMouseDown={handleButtonInteraction}
+            >
+              ✕
+            </button>
+            <div className="flex items-center gap-2 text-yellow-400 font-semibold text-lg">
+              <span className="inline-block">↗</span>
+              <span>Cash Out</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-neutral-400">
+                <span className="flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500"></span>
+                  Available Balance
+                </span>
+                <span className="text-right">
+                  <span className={userUsdBalance === 0 ? "text-red-400" : "text-green-400"}>
+                    ${userUsdBalance.toFixed(2)}
+                  </span>
+                  <br />
+                  <span className="text-neutral-500 text-[11px]">
+                    {userSolBalance.toFixed(6)} SOL
+                  </span>
+                </span>
+              </div>
+              {insufficient && (
+                <div className="text-[11px] bg-red-900/30 border border-red-800 text-red-300 rounded-md px-3 py-2">
+                  Insufficient balance for cashout. Minimum $0.20 + $0.01 required.
+                </div>
+              )}
+            </div>
+            <div className="space-y-3">
+              <div>
+                <div className="flex items-stretch gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={cashOutAmount ? cashOutAmount : ""}
+                    onChange={(e) =>
+                      setCashOutAmount(parseFloat(e.target.value) || 0)
+                    }
+                    className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-3 font-medium focus:outline-none focus:border-yellow-500"
+                    placeholder="0.00"
+                    disabled={insufficient}
+                  />
+                  <div className="flex items-center gap-1">
+                    <button
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold border ${
+                        cashOutCurrency === "USD"
+                          ? "bg-neutral-800 border-neutral-600"
+                          : "bg-neutral-900 border-neutral-700"
+                      }`}
+                      onClick={() => setCashOutCurrency("USD")}
+                      disabled={insufficient}
+                    >
+                      USD
+                    </button>
+                    <button
+                      className={`px-3 py-2 rounded-lg text-xs font-semibold border ${
+                        cashOutCurrency === "SOL"
+                          ? "bg-neutral-800 border-neutral-600"
+                          : "bg-neutral-900 border-neutral-700"
+                      }`}
+                      onClick={() => setCashOutCurrency("SOL")}
+                      disabled={insufficient}
+                    >
+                      SOL
+                    </button>
+                    <button
+                      className="px-3 py-2 rounded-lg text-xs font-semibold border bg-neutral-900 border-neutral-700 hover:border-yellow-500"
+                      onClick={() => setCashOutAmount(userUsdBalance)}
+                      disabled={insufficient || userUsdBalance === 0}
+                    >
+                      MAX
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="h-2 w-full bg-neutral-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 transition-all"
+                      style={{ width: `${cashOutPercent}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-[10px] text-neutral-500 mt-1 text-right">
+                    {cashOutPercent.toFixed(0)}% of available balance
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-neutral-400 block">
+                  Destination Wallet Address
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Solana wallet address..."
+                  value={destAddress}
+                  onChange={(e) => setDestAddress(e.target.value.trim())}
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-500"
+                  disabled={insufficient}
+                />
+                {destAddress && addressInvalid && (
+                  <p className="text-[10px] text-red-400">
+                    Address looks too short to be valid.
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                className="flex-1 btn-secondary py-3 rounded-lg font-medium"
+                onClick={() => setIsCashOutOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 game-btn !m-0 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                id="cashout"
+                disabled={insufficient || amountInvalid || addressInvalid}
+                onMouseDown={(e) => {
+                  handleButtonInteraction(e);
+                  // Placeholder submit action
+                  if (insufficient || amountInvalid || addressInvalid) return;
+                  setIsCashOutOpen(false);
+                  setCashOutAmount(0);
+                  setDestAddress("");
+                }}
+              >
+                ↗ Cash Out
+              </button>
+            </div>
+            <p className="text-[10px] text-neutral-500 text-center">
+              Network + processing fees may apply.
+            </p>
+          </div>
+        </div>
+      )}
       {/* Social Modal */}
       {isSocialOpen && (
         <div
@@ -1634,15 +2041,15 @@ export default function BitSnipersGame() {
                 </div>
               )}
               {socialTab === "search" && (
-                <div>
+                <div className="border-border-neutral-600 border rounded-lg p-4 bg-neutral-800/70">
                   <h3 className="text-lg font-semibold mb-4">Search Players</h3>
-                  <div className="flex gap-2 mb-4">
+                  <div className="flex flex-col gap-2 mb-4">
                     <input
-                      className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-3 py-2 text-sm"
+                      className="w-full bg-neutral-800 border border-neutral-600 rounded px-3 py-2 text-sm"
                       placeholder="Search by username or email"
                     />
                     <button
-                      className="game-btn !m-0 px-6"
+                      className="game-btn !m-0 px-6 w-full"
                       id="submit-btn"
                       onMouseEnter={handleButtonHover}
                       onMouseDown={handleButtonInteraction}
@@ -1750,18 +2157,6 @@ export default function BitSnipersGame() {
                   )}
                 </div>
               )}
-            </div>
-            <div className="px-5 py-3 bg-neutral-900/80 flex items-center justify-end gap-2">
-              <button
-                className="btn-secondary py-2 px-4 rounded-md text-sm"
-                onMouseEnter={handleButtonHover}
-                onMouseDown={(e) => {
-                  handleButtonInteraction(e);
-                  setIsSocialOpen(false);
-                }}
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>

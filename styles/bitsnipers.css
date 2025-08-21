@@ -48,3 +48,57 @@
   background-color: #4c463d9a;
   box-shadow: 0 2px #cc8500;
 }
+
+.admin-tabx {
+  background: transparent;
+  border: 1px solid #787878;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #909090;
+  cursor: pointer;
+  width: 200px;
+  box-shadow: 0 2px #7f7a7a;
+  outline: none;
+  transition: all 0.1s ease-in-out;
+  margin-bottom: 10px;
+}
+
+.admin-tabx:active {
+  transform: translateY(6px);
+  box-shadow: 0 4px #7f7a7a;
+  background: transparent;
+}
+
+.admin-tabx:hover {
+  transform: translateY(4px);
+  box-shadow: 0 2px #595757;
+}
+
+.admin-taby {
+  background:#cc8500;
+  border: 1px solid #a96e01;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  width: 200px;
+  box-shadow: 0 2px #f06b0b;
+  outline: none;
+  transition: all 0.1s ease-in-out;
+  margin-bottom: 10px;
+}
+
+.admin-taby:active {
+  transform: translateY(6px);
+  box-shadow: 0 4px #f06b0b;
+  background: transparent;
+}
+
+.admin-taby:hover {
+  transform: translateY(4px);
+  box-shadow: 0 2px #f06b0b;
+}
