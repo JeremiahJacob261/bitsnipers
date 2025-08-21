@@ -1,59 +1,114 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
+import "@/styles/bitsnipers.css";
 
 // --- Simple inline SVG icons (stroke inherits currentColor) ---
 const IconTrophy = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
     <path d="M8 21h8" />
     <path d="M12 17a5 5 0 0 0 5-5V5H7v7a5 5 0 0 0 5 5Z" />
     <path d="M5 5h14" />
     <path d="M7 9H5a3 3 0 0 1-3-3V5h3" />
     <path d="M17 9h2a3 3 0 0 0 3-3V5h-3" />
   </svg>
-)
+);
 
 const IconUsers = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
     <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
     <circle cx="9" cy="7" r="4" />
     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
   </svg>
-)
+);
 
 const IconRefresh = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
     <polyline points="23 4 23 10 17 10" />
     <path d="M20.49 15A9 9 0 1 1 23 10" />
   </svg>
-)
+);
 
 const IconUser = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
     <path d="M20 21a8 8 0 1 0-16 0" />
     <circle cx="12" cy="7" r="4" />
   </svg>
-)
+);
 
 const IconPlay = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
     <polygon points="8,5 20,12 8,19" />
   </svg>
-)
+);
 
 const IconGlobe = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
     <circle cx="12" cy="12" r="10" />
     <path d="M2 12h20" />
     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z" />
   </svg>
-)
+);
 
 const IconList = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
     <line x1="8" y1="6" x2="21" y2="6" />
     <line x1="8" y1="12" x2="21" y2="12" />
     <line x1="8" y1="18" x2="21" y2="18" />
@@ -61,35 +116,58 @@ const IconList = (props: React.SVGProps<SVGSVGElement>) => (
     <circle cx="4" cy="12" r="1" />
     <circle cx="4" cy="18" r="1" />
   </svg>
-)
+);
 
 const IconWallet = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
     <path d="M3 7h18v10H3z" />
     <path d="M16 12h3" />
     <path d="M3 7l2-2h10l2 2" />
   </svg>
-)
+);
 
 const IconShirt = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    {...props}
+  >
     <path d="M16 3l5 3-2 4-3-2v13H8V8L5 10 3 6l5-3 2 3h4l2-3z" />
   </svg>
-)
+);
 
 // --- Demo data to drive the UI ---
 type UserData = {
-  email: string
-  profile: { username?: string | null; display_name?: string | null } | null
-  wallet: { usd_cents?: number; sol_lamports?: number }
-  friends: Array<{ friend_email: string; created_at: string }>
-  leaderboard: Array<{ email: string; name: string; total_usd: number; total_sol: number }>
-  stats: { global_usd: number; global_sol: number }
-}
+  email: string;
+  profile: { username?: string | null; display_name?: string | null } | null;
+  wallet: { usd_cents?: number; sol_lamports?: number };
+  friends: Array<{ friend_email: string; created_at: string }>;
+  leaderboard: Array<{
+    email: string;
+    name: string;
+    total_usd: number;
+    total_sol: number;
+  }>;
+  stats: { global_usd: number; global_sol: number };
+};
 const demoUser = {
   name: "Sniper",
   country: "US",
-}
+};
 
 const demoLeaderboard: Array<{ name: string; winnings: number }> = [
   { name: "xXx_Labubu_xXx", winnings: 3853.8 },
@@ -97,196 +175,226 @@ const demoLeaderboard: Array<{ name: string; winnings: number }> = [
   { name: "Quantum", winnings: 3050.72 },
   { name: "Nova", winnings: 2711.12 },
   { name: "Orion", winnings: 2150.4 },
-]
+];
 
 const demoFriends: Array<{ name: string; playing: boolean }> = [
   { name: "Zero", playing: false },
   { name: "Mako", playing: true },
   { name: "Viper", playing: false },
-]
+];
 
 const demoWallet = {
   usd: 0,
   sol: 0,
-}
+};
 
 const demoStats = {
   playersInGame: 13,
   globalWinnings: 142_106,
-}
+};
 
-const currency = (n: number) => n.toLocaleString(undefined, { style: "currency", currency: "USD" })
+const currency = (n: number) =>
+  n.toLocaleString(undefined, { style: "currency", currency: "USD" });
 
 export default function BitSnipersGame() {
-  const [isLoginOpen, setIsLoginOpen] = useState(false)
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
-  const [username, setUsername] = useState("")
-  const [audioUnlocked, setAudioUnlocked] = useState(false)
-  const [confirmationCode, setConfirmationCode] = useState(["", "", "", "", "", ""])
-  const [userEmail, setUserEmail] = useState("")
-  const [authLoading, setAuthLoading] = useState(false)
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [soundOn, setSoundOn] = useState(true)
-  const hoverSoundRef = useRef<HTMLAudioElement>(null)
-  const clickSoundRef = useRef<HTMLAudioElement>(null)
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [username, setUsername] = useState("");
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [confirmationCode, setConfirmationCode] = useState([
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ]);
+  const [userEmail, setUserEmail] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [soundOn, setSoundOn] = useState(true);
+  const [isSocialOpen, setIsSocialOpen] = useState(false);
+  const [socialTab, setSocialTab] = useState<
+    "leaderboard" | "search" | "profile" | "friends"
+  >("leaderboard");
+  const [friendsTab, setFriendsTab] = useState<
+    "friends" | "blocked" | "pending"
+  >("friends");
+  const hoverSoundRef = useRef<HTMLAudioElement>(null);
+  const clickSoundRef = useRef<HTMLAudioElement>(null);
 
+  const openSocial = (
+    tab: "leaderboard" | "search" | "profile" | "friends"
+  ) => {
+    if (!ensureAuthOrOpenLogin()) return;
+    setSocialTab(tab);
+    setIsSocialOpen(true);
+  };
   useEffect(() => {
     // Add hover effects to panels
-    const panels = document.querySelectorAll(".panel")
+    const panels = document.querySelectorAll(".panel");
     panels.forEach((panel) => {
-      const handleMouseEnter = () => panel.classList.add("glow")
-      const handleMouseLeave = () => panel.classList.remove("glow")
+      const handleMouseEnter = () => panel.classList.add("glow");
+      const handleMouseLeave = () => panel.classList.remove("glow");
 
-      panel.addEventListener("mouseenter", handleMouseEnter)
-      panel.addEventListener("mouseleave", handleMouseLeave)
+      panel.addEventListener("mouseenter", handleMouseEnter);
+      panel.addEventListener("mouseleave", handleMouseLeave);
 
       return () => {
-        panel.removeEventListener("mouseenter", handleMouseEnter)
-        panel.removeEventListener("mouseleave", handleMouseLeave)
-      }
-    })
+        panel.removeEventListener("mouseenter", handleMouseEnter);
+        panel.removeEventListener("mouseleave", handleMouseLeave);
+      };
+    });
 
     // Simulate live updates
     const interval = setInterval(() => {
-      const liveIndicator = document.querySelector(".live-indicator") as HTMLElement
+      const liveIndicator = document.querySelector(
+        ".live-indicator"
+      ) as HTMLElement;
       if (liveIndicator) {
-        liveIndicator.style.animation = "none"
-        liveIndicator.offsetHeight // Trigger reflow
-        liveIndicator.style.animation = "pulse 2s infinite"
+        liveIndicator.style.animation = "none";
+        liveIndicator.offsetHeight; // Trigger reflow
+        liveIndicator.style.animation = "pulse 2s infinite";
       }
-    }, 5000)
+    }, 5000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   // Hydrate user data if session cookie exists
   useEffect(() => {
     const hydrate = async () => {
       try {
-        const res = await fetch('/api/me', { method: 'GET', credentials: 'include' })
-        if (res.ok) setUserData(await res.json())
+        const res = await fetch("/api/me", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (res.ok) setUserData(await res.json());
       } catch {}
-    }
-    hydrate()
-  }, [])
+    };
+    hydrate();
+  }, []);
 
   const unlockAudio = () => {
     if (!audioUnlocked && hoverSoundRef.current && clickSoundRef.current) {
-      hoverSoundRef.current.play().catch(() => {})
-      hoverSoundRef.current.pause()
-      hoverSoundRef.current.currentTime = 0
+      hoverSoundRef.current.play().catch(() => {});
+      hoverSoundRef.current.pause();
+      hoverSoundRef.current.currentTime = 0;
 
-      clickSoundRef.current.play().catch(() => {})
-      clickSoundRef.current.pause()
-      clickSoundRef.current.currentTime = 0
+      clickSoundRef.current.play().catch(() => {});
+      clickSoundRef.current.pause();
+      clickSoundRef.current.currentTime = 0;
 
-      setAudioUnlocked(true)
+      setAudioUnlocked(true);
     }
-  }
+  };
 
   const playHoverSound = () => {
     if (audioUnlocked && hoverSoundRef.current) {
-      hoverSoundRef.current.currentTime = 0
-      hoverSoundRef.current.play().catch(() => {})
+      hoverSoundRef.current.currentTime = 0;
+      hoverSoundRef.current.play().catch(() => {});
     }
-  }
+  };
 
   const playClickSound = () => {
     if (audioUnlocked && clickSoundRef.current) {
-      clickSoundRef.current.currentTime = 0
-      clickSoundRef.current.play().catch(() => {})
+      clickSoundRef.current.currentTime = 0;
+      clickSoundRef.current.play().catch(() => {});
     }
-  }
+  };
 
   const ensureAuthOrOpenLogin = () => {
     if (!userData) {
-      setIsLoginOpen(true)
-      return false
+      setIsLoginOpen(true);
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
   const handleButtonInteraction = (e: React.MouseEvent) => {
-    unlockAudio()
-    playClickSound()
-  }
+    unlockAudio();
+    playClickSound();
+  };
 
   const handleButtonHover = () => {
-    playHoverSound()
-  }
+    playHoverSound();
+  };
 
   // --- Auth helpers (custom OTP) ---
   const requestMagicLink = async () => {
-    if (!userEmail) return
+    if (!userEmail) return;
     try {
-      setAuthLoading(true)
-      const res = await fetch('/api/auth/request-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      setAuthLoading(true);
+      const res = await fetch("/api/auth/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: userEmail }),
-      })
+      });
       if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        throw new Error(data?.error || 'Failed to send code')
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to send code");
       }
-      setIsLoginOpen(false)
-      setIsVerified(false)
-      setConfirmationCode(["", "", "", "", "", ""]) 
-      setIsConfirmationOpen(true)
+      setIsLoginOpen(false);
+      setIsVerified(false);
+      setConfirmationCode(["", "", "", "", "", ""]);
+      setIsConfirmationOpen(true);
     } catch (e) {
-      console.error('Email OTP request failed', e)
+      console.error("Email OTP request failed", e);
     } finally {
-      setAuthLoading(false)
+      setAuthLoading(false);
     }
-  }
+  };
 
   const verifyCode = async () => {
-    const code = confirmationCode.join("")
-    if (!userEmail || code.length !== 6) return
+    const code = confirmationCode.join("");
+    if (!userEmail || code.length !== 6) return;
     try {
-      setAuthLoading(true)
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      setAuthLoading(true);
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: userEmail, code }),
-      })
+      });
       if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        throw new Error(data?.error || 'Invalid code')
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Invalid code");
       }
-      setIsVerified(true)
+      setIsVerified(true);
       try {
-        const me = await fetch('/api/me', { method: 'GET', credentials: 'include' })
-        if (me.ok) setUserData(await me.json())
+        const me = await fetch("/api/me", {
+          method: "GET",
+          credentials: "include",
+        });
+        if (me.ok) setUserData(await me.json());
       } catch {}
     } catch (e) {
-      console.error('Verify OTP failed', e)
+      console.error("Verify OTP failed", e);
     } finally {
-      setAuthLoading(false)
+      setAuthLoading(false);
     }
-  }
+  };
 
   const saveUsername = async () => {
-    if (!username || username.trim().length < 3) return
+    if (!username || username.trim().length < 3) return;
     try {
-      setAuthLoading(true)
-      const res = await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      setAuthLoading(true);
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: username.trim() }),
-      })
+      });
       if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        throw new Error(data?.error || 'Failed to save username')
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to save username");
       }
-      setIsConfirmationOpen(false)
+      setIsConfirmationOpen(false);
     } catch (e) {
-      console.error('Save username failed', e)
+      console.error("Save username failed", e);
     } finally {
-      setAuthLoading(false)
+      setAuthLoading(false);
     }
-  }
+  };
 
   return (
     <>
@@ -327,21 +435,24 @@ export default function BitSnipersGame() {
           position: relative;
           transform: translateY(0);
           box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4),
-            0 4px 15px rgba(59, 130, 246, 0.3), 0 2px 8px rgba(59, 130, 246, 0.2),
+            0 4px 15px rgba(59, 130, 246, 0.3),
+            0 2px 8px rgba(59, 130, 246, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .btn-primary:hover {
           transform: translateY(-8px);
           box-shadow: 0 16px 35px rgba(59, 130, 246, 0.6),
-            0 8px 20px rgba(59, 130, 246, 0.4), 0 4px 12px rgba(59, 130, 246, 0.3),
+            0 8px 20px rgba(59, 130, 246, 0.4),
+            0 4px 12px rgba(59, 130, 246, 0.3),
             inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .btn-primary:active {
           transform: translateY(-4px);
           box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5),
-            0 4px 12px rgba(59, 130, 246, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            0 4px 12px rgba(59, 130, 246, 0.3),
+            inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .btn-secondary {
@@ -500,6 +611,11 @@ export default function BitSnipersGame() {
           transform: translateY(4px);
           box-shadow: 0 2px #3434e4;
         }
+        #addfunds:active {
+          transform: translateY(6px);
+          box-shadow: 0 2px #3434e4;
+        }
+
         #discord:hover {
           transform: translateY(4px);
           box-shadow: 0 2px #160279;
@@ -517,10 +633,6 @@ export default function BitSnipersGame() {
           box-shadow: 0 2px #7f7f7f;
         }
 
-        #addfunds:active {
-          transform: translateY(6px);
-          box-shadow: 0 2px #3434e4;
-        }
         #discord:active {
           transform: translateY(6px);
           box-shadow: 0 2px #160279;
@@ -645,37 +757,82 @@ export default function BitSnipersGame() {
         {/* Top Bar */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-2">
-            <img src="images/icon.png" alt="logo" className="h-20 mx-auto mb-2" />
+            <img
+              src="images/icon.png"
+              alt="logo"
+              className="h-20 mx-auto mb-2"
+            />
             <span className="text-orange-400 font-bold">
-              Welcome, <span className="inline text-white">{userData?.profile?.username || userData?.profile?.display_name || demoUser.name}</span>
+              Welcome,{" "}
+              <span className="inline text-white">
+                {userData?.profile?.username ||
+                  userData?.profile?.display_name ||
+                  demoUser.name}
+              </span>
             </span>
           </div>
-          <img src="images/logo2.png" alt="BitSnipers" className="h-20 mx-auto mb-2" />
+          <img
+            src="images/logo2.png"
+            alt="BitSnipers"
+            className="h-20 mx-auto mb-2"
+          />
           {userData ? (
             <div className="flex items-center gap-2">
-              <button className="btn-secondary py-2 px-3 rounded-lg font-medium" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>
-                Settings
+              <button
+                className="btn-secondary py-2 px-3 rounded-lg font-medium flex items-center gap-2"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={(e) => {
+                  if (!ensureAuthOrOpenLogin()) return;
+                  handleButtonInteraction(e);
+                  openSocial("search");
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09c.7 0 1.31-.4 1.51-1a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06c.46.46 1.12.61 1.82.33H10a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09c0 .7.4 1.31 1 1.51.7.28 1.36.13 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06c-.46.46-.61 1.12-.33 1.82V10c.9 0 1.65.75 1.65 1.65S20.3 15 19.4 15Z" />
+                </svg>
               </button>
-              <button className="btn-secondary py-2 px-3 rounded-lg font-medium" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>
-                Profile
+              <button
+                className="btn-secondary py-2 px-3 rounded-lg font-medium flex items-center gap-2"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={(e) => {
+                  if (!ensureAuthOrOpenLogin()) return;
+                  handleButtonInteraction(e);
+                  openSocial("profile");
+                }}
+              >
+                <IconUser className="w-4 h-4" />
               </button>
               <button
                 className="btn-secondary py-2 px-3 rounded-lg font-medium"
                 onMouseEnter={handleButtonHover}
-                onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e); setSoundOn(!soundOn) }}
+                onMouseDown={(e) => {
+                  if (!ensureAuthOrOpenLogin()) return;
+                  handleButtonInteraction(e);
+                  setSoundOn(!soundOn);
+                }}
                 aria-pressed={soundOn}
-                title={soundOn ? 'Mute' : 'Unmute'}
+                title={soundOn ? "Mute" : "Unmute"}
               >
-                {soundOn ? '🔊' : '🔈'}
+                {soundOn ? "🔊" : "🔈"}
               </button>
               <button
                 className="btn-secondary py-2 px-3 rounded-lg font-medium"
                 onMouseEnter={handleButtonHover}
                 onMouseDown={async (e) => {
-                  handleButtonInteraction(e)
-                  await fetch('/api/auth/logout', { method: 'POST' })
-                  setUserData(null)
-                  setIsVerified(false)
+                  handleButtonInteraction(e);
+                  await fetch("/api/auth/logout", { method: "POST" });
+                  setUserData(null);
+                  setIsVerified(false);
                 }}
               >
                 Logout
@@ -683,8 +840,7 @@ export default function BitSnipersGame() {
             </div>
           ) : (
             <button
-              className="game-btn"
-              style={{ width: "auto" }}
+              className="btn-secondary py-2 px-3 rounded-lg font-medium flex items-center gap-2"
               onClick={() => setIsLoginOpen(true)}
               onMouseEnter={handleButtonHover}
               onMouseDown={handleButtonInteraction}
@@ -705,23 +861,36 @@ export default function BitSnipersGame() {
                   <IconTrophy className="w-6 h-6 text-yellow-400" />
                   <h2 className="text-xl font-bold">Leaderboard</h2>
                 </div>
-                <div className="live-indicator px-3 py-1 rounded-full text-xs font-semibold text-white">Live</div>
+                <div className="live-indicator px-3 py-1 rounded-full text-xs font-semibold text-white">
+                  Live
+                </div>
               </div>
 
               <div className="space-y-3 mb-4">
-                {(userData?.leaderboard || demoLeaderboard).map((row: any, idx: number) => (
-                  <div key={(row.email || row.name) + idx} className="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-                    <span className="font-medium">{row.name}</span>
-                    <span className="text-green-400 font-bold">{currency((row.total_usd ?? row.winnings) || 0)}</span>
-                  </div>
-                ))}
+                {(userData?.leaderboard || demoLeaderboard).map(
+                  (row: any, idx: number) => (
+                    <div
+                      key={(row.email || row.name) + idx}
+                      className="flex justify-between items-center p-3 bg-neutral-800 rounded-lg"
+                    >
+                      <span className="font-medium">{row.name}</span>
+                      <span className="text-green-400 font-bold">
+                        {currency((row.total_usd ?? row.winnings) || 0)}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
 
               <button
                 className="game-btn"
                 id="grey-btn"
                 onMouseEnter={handleButtonHover}
-                onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
+                onMouseDown={(e) => {
+                  if (!ensureAuthOrOpenLogin()) return;
+                  handleButtonInteraction(e);
+                  openSocial("leaderboard");
+                }}
               >
                 View Full Leaderboard
               </button>
@@ -736,13 +905,27 @@ export default function BitSnipersGame() {
 
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-2">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="my-2 w-5 h-5 hover:text-orange-400">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className="my-2 w-5 h-5 hover:text-orange-400"
+                  >
                     <polyline points="23 4 23 10 17 10" />
                     <path d="M20.49 15A9 9 0 1 1 23 10" />
                   </svg>
-                  <span className="text-gray-400">Refresh</span>
+                  <span className="text-neutral-400">Refresh</span>
                 </div>
-                <span className="text-green-400">{userData ? (userData.friends?.length || 0) : demoFriends.filter(f => f.playing).length} playing</span>
+                <span className="text-green-400">
+                  {userData
+                    ? userData.friends?.length || 0
+                    : demoFriends.filter((f) => f.playing).length}{" "}
+                  playing
+                </span>
               </div>
 
               <div className="space-y-2 py-2">
@@ -750,38 +933,50 @@ export default function BitSnipersGame() {
                   demoFriends.length === 0 ? (
                     <div className="text-center py-8">
                       <IconUser className="w-10 h-10 mx-auto mb-2" />
-                      <p className="text-gray-400">No friends... add some!</p>
+                      <p className="text-neutral-400">
+                        No friends... add some!
+                      </p>
                     </div>
                   ) : (
                     demoFriends.map((f) => (
-                      <div key={f.name} className="flex items-center justify-between p-3 bg-gray-800/60 rounded-lg">
+                      <div
+                        key={f.name}
+                        className="flex items-center justify-between p-3 bg-neutral-800/60 rounded-lg"
+                      >
                         <div className="flex items-center gap-3">
                           <IconUser className="w-5 h-5" />
                           <span className="font-medium">{f.name}</span>
                         </div>
-                        <span className={f.playing ? 'text-green-400' : 'text-gray-400'}>
-                          {f.playing ? 'Playing' : 'Offline'}
+                        <span
+                          className={
+                            f.playing ? "text-green-400" : "text-neutral-400"
+                          }
+                        >
+                          {f.playing ? "Playing" : "Offline"}
                         </span>
                       </div>
                     ))
                   )
+                ) : userData.friends.length === 0 ? (
+                  <div className="text-center py-8">
+                    <IconUser className="w-10 h-10 mx-auto mb-2" />
+                    <p className="text-neutral-400">No friends yet.</p>
+                  </div>
                 ) : (
-                  userData.friends.length === 0 ? (
-                    <div className="text-center py-8">
-                      <IconUser className="w-10 h-10 mx-auto mb-2" />
-                      <p className="text-gray-400">No friends yet.</p>
-                    </div>
-                  ) : (
-                    userData.friends.map((f) => (
-                      <div key={f.friend_email} className="flex items-center justify-between p-3 bg-gray-800/60 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <IconUser className="w-5 h-5" />
-                          <span className="font-medium">{f.friend_email}</span>
-                        </div>
-                        <span className="text-gray-400">since {new Date(f.created_at).toLocaleDateString()}</span>
+                  userData.friends.map((f) => (
+                    <div
+                      key={f.friend_email}
+                      className="flex items-center justify-between p-3 bg-neutral-800/60 rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <IconUser className="w-5 h-5" />
+                        <span className="font-medium">{f.friend_email}</span>
                       </div>
-                    ))
-                  )
+                      <span className="text-neutral-400">
+                        since {new Date(f.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))
                 )}
               </div>
 
@@ -789,7 +984,11 @@ export default function BitSnipersGame() {
                 className="game-btn"
                 id="grey-btn"
                 onMouseEnter={handleButtonHover}
-                onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
+                onMouseDown={(e) => {
+                  if (!ensureAuthOrOpenLogin()) return;
+                  handleButtonInteraction(e);
+                  openSocial("friends");
+                }}
               >
                 Add Friends
               </button>
@@ -800,7 +999,10 @@ export default function BitSnipersGame() {
               className="game-btn"
               id="discord"
               onMouseEnter={handleButtonHover}
-              onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
+              onMouseDown={(e) => {
+                if (!ensureAuthOrOpenLogin()) return;
+                handleButtonInteraction(e);
+              }}
             >
               <svg
                 stroke="currentColor"
@@ -855,7 +1057,7 @@ export default function BitSnipersGame() {
                 <input
                   type="text"
                   placeholder="Login to set your name"
-                  className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400"
+                  className="flex-1 bg-neutral-800 border border-neutral-600 rounded-lg px-3 py-2 text-white placeholder-neutral-400"
                 />
                 <button className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-bold ring-offset-background transition-all duration-100 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer will-change-transform bg-transparent hover:bg-white/10 active:bg-white/15 text-white/90 border-2 border-white/55 shadow-[0_3px_0_#6B7280] hover:shadow-[0_1px_0_#6B7280] active:shadow-[0_0px_0_#6B7280] hover:translate-y-[2px] active:translate-y-[3px] shrink-0 h-[44px] w-[44px]">
                   <svg
@@ -905,7 +1107,14 @@ export default function BitSnipersGame() {
               </div>
 
               {/* Join Game Button */}
-              <button className="game-btn flex items-center justify-center gap-2" onMouseEnter={handleButtonHover} onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}>
+              <button
+                className="game-btn flex items-center justify-center gap-2"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={(e) => {
+                  if (!ensureAuthOrOpenLogin()) return;
+                  handleButtonInteraction(e);
+                }}
+              >
                 <IconPlay className="w-4 h-4" />
                 <span>JOIN GAME</span>
               </button>
@@ -931,15 +1140,28 @@ export default function BitSnipersGame() {
               {/* Game Stats */}
               <div className="space-y-2 mb-6">
                 <div className="text-center">
-                  <p className="text-gray-400 text-sm">{demoStats.playersInGame} Players In Game</p>
+                  <p className="text-neutral-400 text-sm">
+                    {demoStats.playersInGame} Players In Game
+                  </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-gray-400 text-sm">{currency(userData ? userData.stats.global_usd : demoStats.globalWinnings)} Global Player Winnings</p>
+                  <p className="text-neutral-400 text-sm">
+                    {currency(
+                      userData
+                        ? userData.stats.global_usd
+                        : demoStats.globalWinnings
+                    )}{" "}
+                    Global Player Winnings
+                  </p>
                 </div>
               </div>
 
               {/* Manage Affiliate */}
-              <button className="game-btn" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>
+              <button
+                className="game-btn"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={handleButtonInteraction}
+              >
                 Manage Affiliate
               </button>
             </div>
@@ -955,15 +1177,28 @@ export default function BitSnipersGame() {
               </div>
 
               <div className="flex justify-between text-sm mb-4">
-                <span className="text-neutral-400 cursor-pointer hover:underline hover:text-white">Copy Address</span>
+                <span className="text-neutral-400 cursor-pointer hover:underline hover:text-white">
+                  Copy Address
+                </span>
                 <span className="text-neutral-400 cursor-pointer hover:underline hover:text-white">
                   Refresh Balance
                 </span>
               </div>
 
               <div className="text-center mb-4">
-                <div className="text-3xl font-bold text-green-400 mb-1">{userData ? currency((userData.wallet.usd_cents || 0) / 100) : currency(demoWallet.usd)}</div>
-                <div className="text-gray-400">{userData ? (((userData.wallet.sol_lamports || 0) / 1_000_000_000).toFixed(4)) : demoWallet.sol.toFixed(4)} SOL</div>
+                <div className="text-3xl font-bold text-green-400 mb-1">
+                  {userData
+                    ? currency((userData.wallet.usd_cents || 0) / 100)
+                    : currency(demoWallet.usd)}
+                </div>
+                <div className="text-neutral-400">
+                  {userData
+                    ? (
+                        (userData.wallet.sol_lamports || 0) / 1_000_000_000
+                      ).toFixed(4)
+                    : demoWallet.sol.toFixed(4)}{" "}
+                  SOL
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -971,7 +1206,10 @@ export default function BitSnipersGame() {
                   className="game-btn"
                   id="addfunds"
                   onMouseEnter={handleButtonHover}
-                  onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
+                  onMouseDown={(e) => {
+                    if (!ensureAuthOrOpenLogin()) return;
+                    handleButtonInteraction(e);
+                  }}
                 >
                   Add Funds
                 </button>
@@ -979,7 +1217,10 @@ export default function BitSnipersGame() {
                   className="game-btn"
                   id="cashout"
                   onMouseEnter={handleButtonHover}
-                  onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
+                  onMouseDown={(e) => {
+                    if (!ensureAuthOrOpenLogin()) return;
+                    handleButtonInteraction(e);
+                  }}
                 >
                   Cash Out
                 </button>
@@ -1011,7 +1252,10 @@ export default function BitSnipersGame() {
                 className="game-btn"
                 id="grey-btn"
                 onMouseEnter={handleButtonHover}
-                onMouseDown={(e) => { if (!ensureAuthOrOpenLogin()) return; handleButtonInteraction(e) }}
+                onMouseDown={(e) => {
+                  if (!ensureAuthOrOpenLogin()) return;
+                  handleButtonInteraction(e);
+                }}
               >
                 Change Appearance
               </button>
@@ -1024,7 +1268,7 @@ export default function BitSnipersGame() {
           className={`overlay ${isLoginOpen ? "show" : ""}`}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
-              setIsLoginOpen(false)
+              setIsLoginOpen(false);
             }
           }}
         >
@@ -1033,11 +1277,15 @@ export default function BitSnipersGame() {
               &times;
             </span>
             <h4>Log in or sign up</h4>
-            <img src="/images/logo.png" alt="BitSnipers Logo" style={{ margin: "0 auto", display: "block" }} />
+            <img
+              src="/images/logo.png"
+              alt="BitSnipers Logo"
+              style={{ margin: "0 auto", display: "block" }}
+            />
 
             <input
               type="email"
-              className="border border-gray-300 p-2 rounded font-thin tracking-wide"
+              className="border border-neutral-300 p-2 rounded font-thin tracking-wide"
               placeholder="your@email.com"
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
@@ -1046,10 +1294,13 @@ export default function BitSnipersGame() {
               className="game-btn"
               id="submit-btn"
               onMouseEnter={handleButtonHover}
-              onMouseDown={(e) => { handleButtonInteraction(e); requestMagicLink() }}
+              onMouseDown={(e) => {
+                handleButtonInteraction(e);
+                requestMagicLink();
+              }}
               disabled={authLoading}
             >
-              {authLoading ? 'Sending…' : 'Submit'}
+              {authLoading ? "Sending…" : "Submit"}
             </button>
             <button
               className="google"
@@ -1062,7 +1313,12 @@ export default function BitSnipersGame() {
               onMouseEnter={handleButtonHover}
               onMouseDown={handleButtonInteraction}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   fill="#4285F4"
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -1083,42 +1339,65 @@ export default function BitSnipersGame() {
               Google
             </button>
             <small>
-              By logging in I agree to the <a href="#">Terms</a> & <a href="#">Privacy Policy</a>
+              By logging in I agree to the <a href="#">Terms</a> &{" "}
+              <a href="#">Privacy Policy</a>
             </small>
-            <p style={{ marginTop: "1rem", fontSize: "12px", color: "#888" }}>Encrypted with Cloudflare</p>
+            <p style={{ marginTop: "1rem", fontSize: "12px", color: "#888" }}>
+              Encrypted with Cloudflare
+            </p>
           </div>
         </div>
 
-  {/* Email Confirmation Modal */}
+        {/* Email Confirmation Modal */}
         <div
           className={`overlay ${isConfirmationOpen ? "show" : ""}`}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
-              setIsConfirmationOpen(false)
+              setIsConfirmationOpen(false);
             }
           }}
         >
           <div className="bg-[#1c1c1c] text-white w-[360px] rounded-2xl p-6 relative shadow-lg">
             {/* Close Button */}
-            <button 
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+            <button
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white"
               onClick={() => setIsConfirmationOpen(false)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
 
             {/* Back Arrow */}
-            <button 
-              className="absolute top-4 left-4 text-gray-400 hover:text-white"
+            <button
+              className="absolute top-4 left-4 text-neutral-400 hover:text-white"
               onClick={() => {
-                setIsConfirmationOpen(false)
-                setIsLoginOpen(true)
+                setIsConfirmationOpen(false);
+                setIsLoginOpen(true);
               }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
 
@@ -1126,18 +1405,37 @@ export default function BitSnipersGame() {
               <div>
                 {/* Success Icon */}
                 <div className="flex justify-center mb-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-12 h-12 text-green-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12l2 2 4-4"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"
+                    />
                   </svg>
                 </div>
-                <h2 className="text-center text-lg font-semibold mb-1">You're in!</h2>
-                <p className="text-center text-gray-400 text-sm mb-6">Your email has been verified. Pick a username.</p>
+                <h2 className="text-center text-lg font-semibold mb-1">
+                  You're in!
+                </h2>
+                <p className="text-center text-neutral-400 text-sm mb-6">
+                  Your email has been verified. Pick a username.
+                </p>
 
                 <input
                   type="text"
                   placeholder="Choose a username"
-                  className="w-full p-2 rounded bg-[#2a2a2a] border border-gray-600 mb-3"
+                  className="w-full p-2 rounded bg-[#2a2a2a] border border-neutral-600 mb-3"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -1145,25 +1443,39 @@ export default function BitSnipersGame() {
                   className="game-btn w-full"
                   id="submit-btn"
                   onMouseEnter={handleButtonHover}
-                  onMouseDown={(e) => { handleButtonInteraction(e); saveUsername() }}
+                  onMouseDown={(e) => {
+                    handleButtonInteraction(e);
+                    saveUsername();
+                  }}
                   disabled={authLoading || username.trim().length < 3}
                 >
-                  {authLoading ? 'Saving…' : 'Save username'}
+                  {authLoading ? "Saving…" : "Save username"}
                 </button>
               </div>
             ) : (
               <div>
                 {/* Mail Icon */}
                 <div className="flex justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-15 h-10 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M2.25 4.5A2.25 2.25 0 014.5 2.25h15a2.25 2.25 0 012.25 2.25v15a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 012.25 19.5v-15zm2.25 0L12 12.75 19.5 4.5h-15zM19.5 19.5V7.5l-7.5 7.5L4.5 7.5v12h15z"/>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-15 h-10 text-yellow-400"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M2.25 4.5A2.25 2.25 0 014.5 2.25h15a2.25 2.25 0 012.25 2.25v15a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 012.25 19.5v-15zm2.25 0L12 12.75 19.5 4.5h-15zM19.5 19.5V7.5l-7.5 7.5L4.5 7.5v12h15z" />
                   </svg>
                 </div>
 
                 {/* Title */}
-                <h2 className="text-center text-lg font-semibold mb-2 py-4">Enter confirmation code</h2>
-                <p className="text-center text-gray-400 text-sm mb-6">
-                  Please check <span className="text-white font-medium">{userEmail}</span> for an email from <span className="text-white">BitSnipers</span> and enter your code below.
+                <h2 className="text-center text-lg font-semibold mb-2 py-4">
+                  Enter confirmation code
+                </h2>
+                <p className="text-center text-neutral-400 text-sm mb-6">
+                  Please check{" "}
+                  <span className="text-white font-medium">{userEmail}</span>{" "}
+                  for an email from{" "}
+                  <span className="text-white">BitSnipers</span> and enter your
+                  code below.
                 </p>
 
                 {/* Code Inputs */}
@@ -1180,14 +1492,17 @@ export default function BitSnipersGame() {
                           newCode[i] = e.target.value;
                           setConfirmationCode(newCode);
                           if (e.target.value && i < 5) {
-                            const nextInput = document.getElementById(`code-${i + 1}`);
-                            if (nextInput) (nextInput as HTMLInputElement).focus();
+                            const nextInput = document.getElementById(
+                              `code-${i + 1}`
+                            );
+                            if (nextInput)
+                              (nextInput as HTMLInputElement).focus();
                           }
                         }
                       }}
                       inputMode="numeric"
                       maxLength={1}
-                      className="w-12 h-12 text-center text-lg font-bold rounded-lg bg-[#2a2a2a] border border-gray-600 focus:border-yellow-400 focus:outline-none"
+                      className="w-12 h-12 text-center text-lg font-bold rounded-lg bg-[#2a2a2a] border border-neutral-600 focus:border-yellow-400 focus:outline-none"
                       onMouseEnter={handleButtonHover}
                     />
                   ))}
@@ -1198,19 +1513,25 @@ export default function BitSnipersGame() {
                   className="game-btn w-full mb-4 my-2"
                   id="submit-btn"
                   onMouseEnter={handleButtonHover}
-                  onMouseDown={(e) => { handleButtonInteraction(e); verifyCode() }}
+                  onMouseDown={(e) => {
+                    handleButtonInteraction(e);
+                    verifyCode();
+                  }}
                   disabled={authLoading}
                 >
-                  {authLoading ? 'Verifying…' : 'Verify Code'}
+                  {authLoading ? "Verifying…" : "Verify Code"}
                 </button>
 
                 {/* Resend Code */}
-                <p className="text-center text-sm text-gray-400 my-4">
+                <p className="text-center text-sm text-neutral-400 my-4">
                   Didn't get an email?{" "}
                   <button
                     className="text-yellow-400 hover:underline"
                     onMouseEnter={handleButtonHover}
-                    onMouseDown={(e) => { handleButtonInteraction(e); requestMagicLink() }}
+                    onMouseDown={(e) => {
+                      handleButtonInteraction(e);
+                      requestMagicLink();
+                    }}
                     disabled={authLoading}
                   >
                     Resend code
@@ -1220,9 +1541,14 @@ export default function BitSnipersGame() {
             )}
 
             {/* Footer */}
-            <div className="flex justify-center items-center mt-6 text-xs text-gray-500">
+            <div className="flex justify-center items-center mt-6 text-xs text-neutral-500">
               <span>Secured by</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mx-1 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4 mx-1 text-white"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <circle cx="12" cy="12" r="10" />
               </svg>
               <span className="font-semibold">BitSnipers</span>
@@ -1230,6 +1556,216 @@ export default function BitSnipersGame() {
           </div>
         </div>
       </div>
+      {/* Social Modal */}
+      {isSocialOpen && (
+        <div
+          className="overlay show"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsSocialOpen(false);
+          }}
+        >
+          <div className="bg-[#1c1c1c] text-white w-auto h-auto overflow-hidden rounded-2xl p-8 relative shadow-xl flex flex-col border border-neutral-700">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold mb-4 px-5 text-[#d69601]">
+                {socialTab ?? "Social"}
+              </h2>
+              <button
+                className="text-neutral-400 hover:text-white"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={(e) => {
+                  handleButtonInteraction(e);
+                  setIsSocialOpen(false);
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex items-center justify-between px-5 py-4">
+              <div className="flex gap-2">
+                {[
+                  { k: "leaderboard", label: "Leaderboard" },
+                  { k: "search", label: "Search" },
+                  { k: "profile", label: "Profile" },
+                  { k: "friends", label: "Friends" },
+                ].map((t) => (
+                  <button
+                    key={t.k}
+                    className={`${
+                      socialTab === t.k
+                        ? "game-unselecteddialogtab"
+                        : "game-selecteddialogtab"
+                    }`}
+                    onMouseEnter={handleButtonHover}
+                    onMouseDown={(e) => {
+                      handleButtonInteraction(e);
+                      setSocialTab(t.k as any);
+                    }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 overflow-auto px-6 py-5 space-y-6 text-sm">
+              {socialTab === "leaderboard" && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Top Players</h3>
+                  <div className="space-y-2">
+                    {(userData?.leaderboard || demoLeaderboard)
+                      .slice(0, 50)
+                      .map((row: any, idx: number) => (
+                        <div
+                          key={(row.email || row.name) + idx}
+                          className="flex items-center justify-between bg-neutral-800/70 rounded-lg px-4 py-2"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-neutral-400 w-6 text-right">
+                              {idx + 1}
+                            </span>
+                            <IconUser className="w-5 h-5" />
+                            <span className="font-medium">{row.name}</span>
+                          </div>
+                          <span className="text-green-400 font-semibold">
+                            {currency((row.total_usd ?? row.winnings) || 0)}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+              {socialTab === "search" && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Search Players</h3>
+                  <div className="flex gap-2 mb-4">
+                    <input
+                      className="flex-1 bg-neutral-800 border border-neutral-600 rounded px-3 py-2 text-sm"
+                      placeholder="Search by username or email"
+                    />
+                    <button
+                      className="game-btn !m-0 px-6"
+                      id="submit-btn"
+                      onMouseEnter={handleButtonHover}
+                      onMouseDown={handleButtonInteraction}
+                    >
+                      Go
+                    </button>
+                  </div>
+                  <p className="text-neutral-400 text-xs">
+                    Search results will appear here.
+                  </p>
+                </div>
+              )}
+              {socialTab === "profile" && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Your Profile</h3>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-neutral-800/70 rounded-lg p-4">
+                      <p className="text-xs text-neutral-400">Username</p>
+                      <p className="font-medium">
+                        {userData?.profile?.username ||
+                          userData?.profile?.display_name ||
+                          "—"}
+                      </p>
+                    </div>
+                    <div className="bg-neutral-800/70 rounded-lg p-4">
+                      <p className="text-xs text-neutral-400">Email</p>
+                      <p className="font-medium break-all">{userData?.email}</p>
+                    </div>
+                    <div className="bg-neutral-800/70 rounded-lg p-4 col-span-2">
+                      <p className="text-xs text-neutral-400">
+                        Total Winnings (USD)
+                      </p>
+                      <p className="font-semibold text-green-400">
+                        {currency(
+                          userData
+                            ? userData.leaderboard.find(
+                                (l) => l.email === userData.email
+                              )?.total_usd || 0
+                            : 0
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-neutral-400 text-xs">
+                    More profile customization coming soon.
+                  </p>
+                </div>
+              )}
+              {socialTab === "friends" && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Friends</h3>
+                  <div className="flex gap-2 mb-4">
+                    {["friends", "pending", "blocked"].map((ft) => (
+                      <button
+                        key={ft}
+                        className={`px-3 py-1 rounded-md text-xs font-medium ${
+                          friendsTab === ft
+                            ? "bg-yellow-500 text-black"
+                            : "bg-neutral-800 hover:bg-neutral-700"
+                        }`}
+                        onMouseEnter={handleButtonHover}
+                        onMouseDown={(e) => {
+                          handleButtonInteraction(e);
+                          setFriendsTab(ft as any);
+                        }}
+                      >
+                        {ft.charAt(0).toUpperCase() + ft.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                  {friendsTab === "friends" && (
+                    <div className="space-y-2">
+                      {(userData?.friends || []).map((f) => (
+                        <div
+                          key={f.friend_email}
+                          className="flex items-center justify-between bg-neutral-800/70 rounded-lg px-4 py-2"
+                        >
+                          <div className="flex items-center gap-3">
+                            <IconUser className="w-5 h-5" />
+                            <span className="font-medium">
+                              {f.friend_email}
+                            </span>
+                          </div>
+                          <span className="text-xs text-neutral-400">
+                            {new Date(f.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      ))}
+                      {(!userData || userData.friends.length === 0) && (
+                        <p className="text-neutral-400 text-xs">
+                          No friends yet.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {friendsTab === "pending" && (
+                    <p className="text-neutral-400 text-xs">
+                      No pending requests.
+                    </p>
+                  )}
+                  {friendsTab === "blocked" && (
+                    <p className="text-neutral-400 text-xs">
+                      No blocked users.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="px-5 py-3 bg-neutral-900/80 flex items-center justify-end gap-2">
+              <button
+                className="btn-secondary py-2 px-4 rounded-md text-sm"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={(e) => {
+                  handleButtonInteraction(e);
+                  setIsSocialOpen(false);
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
-  )
+  );
 }

@@ -1,0 +1,50 @@
+.game-unselecteddialogtab {
+  background: linear-gradient(to bottom, #ffd65c, #ffb400);
+  border: 1px solid #cc8500;
+  border-radius: 8px;
+  padding: 8px;
+  padding-left: 16px;
+  padding-right: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: black;
+  cursor: pointer;
+  width: 200px;
+  box-shadow: 0 2px #cc8500;
+  outline: none;
+  transition: all 0.1s ease-in-out;
+  margin-bottom: 10px;
+}
+
+.game-unselecteddialogtab:active {
+  transform: translateY(6px);
+  box-shadow: 0 4px #cc8500;
+  background: linear-gradient(to bottom, #d3b14c, #d69601);
+}
+
+.game-unselecteddialogtab:hover {
+  transform: translateY(4px);
+  box-shadow: 0 2px #cc8500;
+}
+
+.game-selecteddialogtab {
+  background: transparent;
+  border: 1px solid #cc8500;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #cc8500;
+  cursor: pointer;
+  width: 200px;
+  box-shadow: 0 2px #cc8500;
+  outline: none;
+  transition: all 0.1s ease-in-out;
+  margin-bottom: 10px;
+}
+
+.game-selecteddialogtab:hover {
+  transform: translateY(4px);
+  background-color: #4c463d9a;
+  box-shadow: 0 2px #cc8500;
+}
