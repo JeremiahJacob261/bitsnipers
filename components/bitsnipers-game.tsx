@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from "react";
 import "@/styles/bitsnipers.css";
 
@@ -197,6 +197,7 @@ const currency = (n: number) =>
   n.toLocaleString(undefined, { style: "currency", currency: "USD" });
 
 export default function BitSnipersGame() {
+  const router = useRouter();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -230,6 +231,7 @@ export default function BitSnipersGame() {
   const [affiliateLoading, setAffiliateLoading] = useState(false);
   const [affiliateCode, setAffiliateCode] = useState("");
   const [affiliateData, setAffiliateData] = useState<any | null>(null);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
   const hoverSoundRef = useRef<HTMLAudioElement>(null);
   const clickSoundRef = useRef<HTMLAudioElement>(null);
 
@@ -270,6 +272,11 @@ export default function BitSnipersGame() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Prefetch demo route for faster load
+  useEffect(() => {
+    router.prefetch('/sniper-demo');
+  }, [router]);
 
   // Hydrate user data if session cookie exists
   useEffect(() => {
@@ -797,6 +804,60 @@ export default function BitSnipersGame() {
           color: #444;
           font-weight: bold;
         }
+        /* Loading overlay */
+        .loading-dialog {
+          background: rgba(20,20,20,0.85);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 18px;
+          padding: 3rem 3.5rem 2.5rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.75rem;
+          position: relative;
+          box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 8px 40px -10px rgba(0,0,0,0.8), 0 0 120px -40px #f59e0b;
+          overflow: hidden;
+        }
+        .loading-dialog:before, .loading-dialog:after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 30% 30%, rgba(245,158,11,0.15), transparent 60%), radial-gradient(circle at 70% 65%, rgba(245,158,11,0.12), transparent 55%);
+          pointer-events: none;
+        }
+        .loading-spinner {
+          width: 72px;
+          height: 72px;
+          border: 6px solid rgba(255,255,255,0.08);
+          border-top-color: #fbbf24;
+          border-right-color: #f59e0b;
+          border-radius: 50%;
+          animation: spin 0.9s linear infinite;
+          position: relative;
+        }
+        .loading-spinner:after {
+          content: "";
+          position: absolute;
+          inset: 10px;
+          border: 4px solid rgba(255,255,255,0.06);
+          border-bottom-color: #f59e0b;
+          border-radius: 50%;
+          animation: spin 1.4s linear reverse infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+          font-size: 0.95rem;
+          letter-spacing: 0.08em;
+          font-weight: 600;
+          color: #fcd34d;
+          text-transform: uppercase;
+        }
+        .loading-sub {
+          font-size: 0.7rem;
+          letter-spacing: 0.15em;
+          color: #9ca3af;
+          text-transform: uppercase;
+        }
 
         .dialog small {
           font-size: 12px;
@@ -1183,6 +1244,25 @@ export default function BitSnipersGame() {
               >
                 <IconPlay className="w-4 h-4" />
                 <span>JOIN GAME</span>
+              </button>
+
+               <button
+                className="game-btn flex items-center justify-center gap-2"
+                id="demo-btn"
+                onMouseEnter={handleButtonHover}
+                onMouseDown={(e) => {
+                  //play demo
+                    if (!isDemoLoading) {
+                      handleButtonInteraction(e);
+                      setIsDemoLoading(true);
+                      // slight delay to allow overlay paint; navigate after 600ms
+                      setTimeout(() => {
+                        router.push('/sniper-demo');
+                      }, 600);
+                    }
+                }}
+              >
+                <span>PLAY DEMO</span>
               </button>
 
               {/* Game Options */}
@@ -2158,6 +2238,24 @@ export default function BitSnipersGame() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+      {/* Demo Loading Overlay */}
+      {isDemoLoading && (
+        <div className="overlay show" style={{ zIndex: 50 }}>
+          <div className="loading-dialog">
+            <div className="loading-spinner" />
+            <div className="flex flex-col items-center gap-2">
+              <span className="loading-text">Loading Demo</span>
+              <span className="loading-sub tracking-widest">Preparing Arena...</span>
+            </div>
+            <button
+              className="mt-4 text-xs text-neutral-400 hover:text-white transition-colors"
+              onClick={() => setIsDemoLoading(false)}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

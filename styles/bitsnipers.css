@@ -102,3 +102,17 @@
   transform: translateY(4px);
   box-shadow: 0 2px #f06b0b;
 }
+
+#demo-btn {
+  background: linear-gradient(to bottom, #c9f7a3, #6bbf3d);
+  border: 1px solid #4a8f29;
+  padding: 15px 60px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #103a08;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: 0 2px #4a8f29;
+  outline: none;
+  transition: background .15s, transform .1s, box-shadow .1s;
+}
