@@ -232,6 +232,9 @@ export default function BitSnipersGame() {
   const [affiliateCode, setAffiliateCode] = useState("");
   const [affiliateData, setAffiliateData] = useState<any | null>(null);
   const [isDemoLoading, setIsDemoLoading] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<'home'|'game'|'wallet'|'customize'|'social'>('home');
+  const [selectedSkin, setSelectedSkin] = useState<number | null>(null);
   const hoverSoundRef = useRef<HTMLAudioElement>(null);
   const clickSoundRef = useRef<HTMLAudioElement>(null);
 
@@ -471,6 +474,30 @@ export default function BitSnipersGame() {
 
   return (
     <>
+      <style jsx global>{`
+        /* Mobile enhancements */
+        @media (max-width: 975px) {
+          .desktop-grid { display: none; }
+          .mobile-shell { display: flex; }
+        }
+        @media (min-width: 976px) {
+          .mobile-shell { display: none; }
+        }
+        .slide-fade-enter { opacity: 0; transform: translateX(12px); }
+        .slide-fade-active { opacity: 1; transform: translateX(0); transition: all .35s cubic-bezier(.4,.1,.2,1); }
+        .panel-animate { transition: transform .5s cubic-bezier(.22,.8,.26,.99), opacity .4s ease; }
+        .panel-animate.out { opacity: 0; transform: translateY(10px); }
+        .mobile-tab-btn { flex:1; font-size:11px; letter-spacing:.05em; padding:.65rem .4rem; display:flex; flex-direction:column; align-items:center; gap:4px; }
+        .mobile-tab-btn svg { width:18px; height:18px; }
+        .mobile-tab-active { color:#facc15; }
+        .glass-bar { backdrop-filter: blur(18px); background: linear-gradient(120deg,rgba(30,30,30,.85),rgba(20,20,20,.75)); box-shadow:0 4px 20px -4px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05); }
+        .glass-card { backdrop-filter: blur(20px); background: linear-gradient(165deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border:1px solid rgba(255,255,255,0.08); box-shadow:0 4px 30px -6px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05); }
+        .skin-grid img { transition: transform .25s ease, box-shadow .25s ease; box-shadow:0 3px 10px -4px rgba(0,0,0,.7); }
+        .skin-grid img:active { transform:scale(.9) rotate(-4deg); }
+        .skin-selected { outline:2px solid #fbbf24; outline-offset:2px; }
+        .bounce-in { animation: bounceIn .55s cubic-bezier(.34,1.56,.64,1); }
+        @keyframes bounceIn { 0% { transform:scale(.6); opacity:0;} 60% { transform:scale(1.05); opacity:1;} 100% { transform:scale(1);} }
+      `}</style>
       <style jsx global>{`
         @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
@@ -880,7 +907,7 @@ export default function BitSnipersGame() {
       <audio ref={hoverSoundRef} src="sounds/hover.mp3" />
       <audio ref={clickSoundRef} src="sounds/switch_click.mp3" />
 
-      <div className="hexagon-bg min-h-screen text-white p-4">
+  <div className="hexagon-bg min-h-screen text-white p-4 desktop-grid">
         {/* Top Bar */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-2">
@@ -2250,7 +2277,7 @@ export default function BitSnipersGame() {
           <div className="loading-dialog">
             <div className="loading-spinner" />
             <div className="flex flex-col items-center gap-2">
-              <span className="loading-text">Loading Demo</span>
+              <span className="loading-text">Loading Game</span>
               <span className="loading-sub tracking-widest">Preparing Arena...</span>
             </div>
             <button
@@ -2262,6 +2289,238 @@ export default function BitSnipersGame() {
           </div>
         </div>
       )}
+  {/* Mobile shell */}
+  <div className="mobile-shell hexagon-bg flex flex-col min-h-screen text-white">
+        <header className="glass-bar sticky top-0 z-40 flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <button onClick={()=>setMobileNavOpen(o=>!o)} aria-label="Menu" className="p-2 rounded-md hover:bg-white/10 active:scale-95 transition">
+              <svg width="22" height="22" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M3 6h16M3 12h16M3 18h16"/></svg>
+            </button>
+            <img src="/images/icon.png" alt="logo" className="h-8 w-8 rounded" />
+            <span className="text-sm font-semibold tracking-wide">BitSnipers</span>
+          </div>
+          <button
+            onClick={()=>{
+              if(!ensureAuthOrOpenLogin()) return;
+              setIsDemoLoading(true);
+              setTimeout(()=>router.push('/sniper-demo'),600);
+            }}
+            className="text-xs px-3 py-1 rounded-md bg-gradient-to-r from-yellow-500 to-amber-600 font-semibold shadow hover:brightness-110 active:scale-95 transition"
+          >
+            Play
+          </button>
+        </header>
+        {/* Slide out nav */}
+        <div className={`fixed inset-0 z-30 transition ${mobileNavOpen? 'pointer-events-auto':'pointer-events-none'}`}>
+          <div onClick={()=>setMobileNavOpen(false)} className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity ${mobileNavOpen?'opacity-100':'opacity-0'}`}></div>
+          <nav className={`absolute top-0 left-0 h-full w-[70%] max-w-xs glass-bar transform ${mobileNavOpen?'translate-x-0':'-translate-x-full'} transition-transform duration-400 ease-[cubic-bezier(.4,.1,.2,1)] flex flex-col p-5 gap-4`}> 
+            <h3 className="text-sm font-semibold text-neutral-300 mb-2">Navigation</h3>
+            {[
+              ['home','Home'],['game','Game'],['wallet','Wallet'],['customize','Customize'],['social','Social']
+            ].map(([k,label])=> {
+              const handleClick = () => {
+                if(k !== 'home' && !ensureAuthOrOpenLogin()) return;
+                setMobileView(k as any);
+                setMobileNavOpen(false);
+              };
+              return (
+                <button key={k} onClick={handleClick} className={`text-left px-3 py-2 rounded-md font-medium text-sm transition ${mobileView===k? 'bg-yellow-500/15 text-yellow-400':'hover:bg-white/10 text-neutral-300'}`}>{label}</button>
+              );
+            })}
+            <div className="mt-auto pt-4 text-xs text-neutral-500">v0.1 mobile</div>
+          </nav>
+        </div>
+        {/* Content views */}
+        <main className="flex-1 relative px-4 py-4 overflow-x-hidden">
+          <div key={mobileView} className="slide-fade-enter slide-fade-active space-y-6">
+            {mobileView==='home' && (
+              <section className="space-y-5">
+                <div className="glass-card rounded-2xl p-5 panel-animate bounce-in">
+                  {userData ? (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="font-bold tracking-wide">Leaderboard</h2>
+                        <span className="text-[10px] px-2 py-1 rounded-full bg-green-500/15 text-green-400 font-semibold">LIVE</span>
+                      </div>
+                      <div className="space-y-2">
+                        {userData.leaderboard.slice(0,5).map((row:any,i:number)=>(
+                          <div key={row.name+i} className="flex justify-between text-xs bg-white/5 rounded-md px-3 py-2">
+                            <span className="truncate flex-1 pr-2">{i+1}. {row.name}</span>
+                            <span className="text-green-400 font-semibold">{currency(row.total_usd)}</span>
+                          </div>
+                        ))}
+                        {userData.leaderboard.length===0 && <p className="text-[11px] text-neutral-400">No leaderboard data yet.</p>}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-6">
+                      <h2 className="font-bold tracking-wide mb-2">Login Required</h2>
+                      <p className="text-[11px] text-neutral-400 mb-4">Sign in to view live leaderboard & stats.</p>
+                      <button onClick={()=>setIsLoginOpen(true)} className="game-btn !m-0 px-6 py-3" id="submit-btn">Login</button>
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <button onClick={()=>{ if(!ensureAuthOrOpenLogin()) return; setMobileView('game'); }} className="glass-card rounded-xl p-4 text-left active:scale-95 transition panel-animate">
+                    <p className="text-[10px] uppercase tracking-wide text-neutral-400">Game</p>
+                    <p className="text-base font-bold text-orange-400 mt-1">Play</p>
+                  </button>
+                  <button onClick={()=>{ if(!ensureAuthOrOpenLogin()) return; setMobileView('wallet'); }} className="glass-card rounded-xl p-4 text-left active:scale-95 transition panel-animate">
+                    <p className="text-[10px] uppercase tracking-wide text-neutral-400">Wallet</p>
+                    <p className="text-base font-bold text-green-400 mt-1">{currency(userUsdBalance)}</p>
+                  </button>
+                  <button onClick={()=>{ if(!ensureAuthOrOpenLogin()) return; setMobileView('customize'); }} className="glass-card rounded-xl p-4 text-left active:scale-95 transition panel-animate">
+                    <p className="text-[10px] uppercase tracking-wide text-neutral-400">Skins</p>
+                    <p className="text-base font-bold text-yellow-400 mt-1">{selectedSkin || '—'}</p>
+                  </button>
+                </div>
+                <button onClick={()=>{if(!ensureAuthOrOpenLogin())return; setIsAffiliateOpen(true);}} className="w-full glass-card rounded-xl p-5 text-left active:scale-95 transition panel-animate flex items-center justify-between">
+                  <span className="font-semibold">Affiliate</span>
+                  <svg width="18" height="18" stroke="currentColor" fill="none" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                </button>
+              </section>
+            )}
+            {mobileView==='game' && (
+              <section className="space-y-5">
+                <div className="glass-card rounded-2xl p-5 panel-animate">
+                  <h2 className="font-bold tracking-wide mb-4">Game Setup</h2>
+                  <div className="flex items-center gap-2 mb-4">
+                    <input
+                      type="text"
+                      placeholder="Login to set your name"
+                      className="flex-1 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs h-10"
+                      disabled={!userData}
+                    />
+                    <button className="btn-secondary py-2 my-2 px-3 rounded-lg font-medium text-xs" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>✎</button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 mb-3">
+                    {[1,5,20].map(v => (
+                      <button key={v} className="game-btn !m-0 py-3 text-sm" style={{padding:'0'}} onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>${v}</button>
+                    ))}
+                  </div>
+                  <button className="game-btn flex items-center justify-center gap-2 my-4 mb-2" onMouseEnter={handleButtonHover} onMouseDown={(e)=>{ if(!ensureAuthOrOpenLogin())return; handleButtonInteraction(e); }}>JOIN GAME</button>
+                  <button className="game-btn flex items-center justify-center gap-2 my-2" id="play-btn" onMouseEnter={handleButtonHover} onMouseDown={(e)=>{ if(!ensureAuthOrOpenLogin()) return; if(!isDemoLoading){ handleButtonInteraction(e); setIsDemoLoading(true); setTimeout(()=>router.push('/sniper-demo'),600);} }}>PLAY</button>
+                  <div className="grid grid-cols-2 gap-3 my-5">
+                    <button className="btn-secondary py-3 rounded-lg font-medium flex items-center justify-center gap-2 text-xs" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}><IconGlobe className="w-4 h-4" /> {demoUser.country}</button>
+                    <button className="btn-secondary py-3 rounded-lg font-medium flex items-center justify-center gap-2 text-xs" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}><IconList className="w-4 h-4" /> Lobbies</button>
+                  </div>
+                  <div className="space-y-1  my-2 text-center text-[11px] text-neutral-400">
+                    <p>{demoStats.playersInGame} Players In Game</p>
+                    <p>{currency(userData ? userData.stats.global_usd : demoStats.globalWinnings)} Global Winnings</p>
+                  </div>
+                  <button onClick={()=>{ if(!ensureAuthOrOpenLogin())return; setIsAffiliateOpen(true); }} className="game-btn !m-0 mt-5">Manage Affiliate</button>
+                </div>
+                <button onClick={()=>setMobileView('home')} className="text-xs text-neutral-500 mx-auto block">Back Home</button>
+              </section>
+            )}
+            {mobileView==='wallet' && (
+              <section className="space-y-4">
+                <div className="glass-card rounded-2xl p-5 panel-animate">
+                  <h2 className="font-bold tracking-wide mb-2">Wallet</h2>
+                  <div className="text-3xl font-bold text-green-400 mb-1">{currency(userUsdBalance)}</div>
+                  <div className="text-xs text-neutral-400 mb-4">{userSolBalance.toFixed(4)} SOL</div>
+                  <div className="flex justify-between text-[11px] mb-3">
+                    <button className="text-neutral-400 hover:text-white" onClick={()=>navigator.clipboard.writeText('wallet-address')} onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>Copy Address</button>
+                    <button className="text-neutral-400 hover:text-white" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>Refresh</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={()=>{ if(!ensureAuthOrOpenLogin()) return; setIsAddFundsOpen(true); }} className="bg-green-500/15 text-green-400 rounded-md py-2 text-sm font-medium active:scale-95 transition">Add Funds</button>
+                    <button onClick={()=>{ if(!ensureAuthOrOpenLogin()) return; setIsCashOutOpen(true); }} className="bg-yellow-500/15 text-yellow-400 rounded-md py-2 text-sm font-medium active:scale-95 transition">Cash Out</button>
+                  </div>
+                </div>
+                <button onClick={()=>setMobileView('home')} className="text-xs text-neutral-500 mx-auto block">Back Home</button>
+              </section>
+            )}
+            {mobileView==='customize' && (
+              <section className="space-y-5">
+                <div className="glass-card rounded-2xl p-5 panel-animate">
+                  <h2 className="font-bold tracking-wide mb-3">Skins</h2>
+                  <div className="skin-grid grid grid-cols-4 gap-3">
+                    {[2,3,4,5].map(n=> (
+                      <div key={n} className="relative group">
+                        <img
+                          src={`/images/${n}.png`}
+                          alt={`Skin ${n}`}
+                          onClick={()=>{ if(!ensureAuthOrOpenLogin()) return; setSelectedSkin(n);} }
+                          className={`w-full aspect-square object-contain rounded-md bg-black/40 p-1 group-active:scale-90 transition cursor-pointer ${selectedSkin===n?'outline outline-yellow-400':''}`}
+                        />
+                        <span className="absolute bottom-1 left-1 right-1 text-[9px] text-center text-neutral-400">#{n}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button className="game-btn !m-0 mt-5" id="grey-btn" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>Change Appearance</button>
+                </div>
+                <button onClick={()=>setMobileView('home')} className="text-xs text-neutral-500 mx-auto block">Back Home</button>
+              </section>
+            )}
+            {mobileView==='social' && (
+              <section className="space-y-5">
+                <div className="glass-card rounded-2xl p-5 panel-animate">
+                  <div className="flex items-center gap-2 mb-4">
+                    {['leaderboard','friends','search','profile'].map(tab => (
+                      <button
+                        key={tab}
+                        className={`px-3 py-1 rounded-md text-[11px] font-medium ${socialTab===tab? 'bg-yellow-500 text-black':'bg-white/10 hover:bg-white/15'}`}
+                        onMouseEnter={handleButtonHover}
+                        onMouseDown={(e)=>{handleButtonInteraction(e); setSocialTab(tab as any);}}
+                      >{tab}</button>
+                    ))}
+                  </div>
+                  {socialTab==='leaderboard' && (
+                    <div className="space-y-2 max-h-56 overflow-auto pr-1">
+                      {(userData?.leaderboard||demoLeaderboard).slice(0,30).map((row:any,i:number)=>(
+                        <div key={row.name+i} className="flex justify-between text-[11px] bg-white/5 rounded px-3 py-1">
+                          <span className="truncate pr-2">{i+1}. {row.name}</span>
+                          <span className="text-green-400 font-medium">{currency(typeof row.total_usd==='number'? row.total_usd : row.winnings)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {socialTab==='friends' && (
+                    <div className="space-y-2 max-h-56 overflow-auto pr-1">
+                      {(userData?.friends || demoFriends).map((f:any,i:number)=>(
+                        <div key={i} className="flex items-center justify-between text-[11px] bg-white/5 rounded px-3 py-2">
+                          <span className="flex items-center gap-2"><IconUser className="w-4 h-4" /> {f.friend_email || f.name}</span>
+                          <span className="text-neutral-400">{f.created_at? new Date(f.created_at).toLocaleDateString(): (f.playing? 'Playing':'Offline')}</span>
+                        </div>
+                      ))}
+                      {(!userData && demoFriends.length===0) && <p className="text-neutral-400 text-[11px]">No friends.</p>}
+                    </div>
+                  )}
+                  {socialTab==='search' && (
+                    <div className="space-y-3">
+                      <input placeholder="Search players" className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-xs" />
+                      <button className="game-btn !m-0" id="submit-btn" onMouseEnter={handleButtonHover} onMouseDown={handleButtonInteraction}>Go</button>
+                      <p className="text-[11px] text-neutral-500">Results appear here.</p>
+                    </div>
+                  )}
+                  {socialTab==='profile' && (
+                    <div className="space-y-3 text-[11px]">
+                      <div className="flex justify-between bg-white/5 rounded px-3 py-2"><span>Username</span><span>{userData?.profile?.username || '—'}</span></div>
+                      <div className="flex justify-between bg-white/5 rounded px-3 py-2"><span>Email</span><span className="truncate max-w-[140px]">{userData?.email || '—'}</span></div>
+                    </div>
+                  )}
+                </div>
+                <button onClick={()=>setMobileView('home')} className="text-xs text-neutral-500 mx-auto block">Back Home</button>
+              </section>
+            )}
+          </div>
+        </main>
+        <nav className="glass-bar fixed bottom-0 left-0 right-0 z-40 flex items-stretch border-t border-white/5">
+          {[
+            ['home','Home','M10 6h10M4 12h16M7 18h13'],
+            ['game','Game','M4 4h16v6H4z M8 14h8v6H8z'],
+            ['wallet','Wallet','M3 7h18v10H3z M16 12h3 M3 7l2-2h10l2 2'],
+            ['customize','Skins','M12 2l4 2 4 2v6c0 5-3 9-8 10-5-1-8-5-8-10V6l4-2 4-2z'],
+            ['social','Social','M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-.1 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75']
+          ].map(([k,label,path]) => (
+            <button key={k} onClick={()=>{ if(k!=='home' && !ensureAuthOrOpenLogin()) return; setMobileView(k as any); }} className={`mobile-tab-btn ${mobileView===k? 'mobile-tab-active':''}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={path as string} /></svg>
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
     </>
   );
 }
