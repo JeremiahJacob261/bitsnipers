@@ -1387,16 +1387,19 @@ export default function BitSnipersGame() {
               </div>
 
               <div className="character-preview p-4 mb-4 text-center">
-                <div className="flex justify-center items-center space-x-1 mb-2">
-                  <div className="character-segment"></div>
-                  <div className="character-segment"></div>
-                  <div className="character-segment"></div>
-                  <div className="character-segment"></div>
-                  <div className="character-segment"></div>
-                </div>
-                <div className="flex justify-center space-x-1">
-                  <div className="w-2 h-2 bg-black rounded-full"></div>
-                  <div className="w-2 h-2 bg-black rounded-full"></div>
+                <div className="mb-3 text-sm text-neutral-400">Select a Skin</div>
+                <div className="flex justify-center items-center gap-4">
+                  {[2,3,4,5].map(num => (
+                    <div key={num} className="flex flex-col items-center">
+                      <img
+                        src={`/images/${num}.png`}
+                        alt={`Skin ${num}`}
+                        className="w-16 h-16 rounded-lg border-2 border-yellow-500 bg-neutral-900 shadow hover:scale-105 transition-transform duration-150 cursor-pointer"
+                        style={{ objectFit: 'contain' }}
+                      />
+                      <span className="mt-1 text-xs text-yellow-400 font-semibold">Skin {num}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
