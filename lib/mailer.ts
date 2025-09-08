@@ -1,10 +1,10 @@
 import nodemailer from 'nodemailer'
 
 export function createTransport() {
-  const host = process.env.SMTP_HOST
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com'
   const port = Number(process.env.SMTP_PORT || 465)
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
+  const user = process.env.SMTP_USER || 'akpomoshix@gmail.com'
+  const pass = process.env.SMTP_PASS || 'soqx tkmf pmue gclu'
 
 
   
