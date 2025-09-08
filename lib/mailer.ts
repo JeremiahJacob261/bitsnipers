@@ -24,7 +24,7 @@ export function createTransport() {
 
 export async function sendOtpEmail(to: string, code: string) {
   const transporter = createTransport()
-  const from = process.env.SMTP_FROM || process.env.SMTP_USER!
+  const from = "akpomoshix@gmail.com"!
   const site = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   const html = `
