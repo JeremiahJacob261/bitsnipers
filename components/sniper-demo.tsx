@@ -60,29 +60,37 @@ export const SniperDemo: React.FC = () => {
       let loot: Loot[] = [];
       let lastCash = 1;
       let playerImg: p5.Image | null = null;
-  let spikerImg: p5.Image | null = null;
+      let spikerImg: p5.Image | null = null;
 
-  type Obstacle = { x: number; y: number; r: number };
-  let obstacles: Obstacle[] = [];
+      type Obstacle = { x: number; y: number; r: number };
+      let obstacles: Obstacle[] = [];
 
       const BOT_COUNT = 5;
-  let CANVAS_W = window.innerWidth;
-  let CANVAS_H = window.innerHeight;
-  // --- Obstacle / sizing configuration (edit these to tweak quickly) ---
-  const OBSTACLE_COUNT = 8;           // how many obstacles to place
-  const OBSTACLE_RADIUS = 60;         // base radius of each obstacle (was 28)
-  const OBSTACLE_PLAYER_CLEAR = 3 * OBSTACLE_RADIUS; // min distance from player spawn
-  const OBSTACLE_MIN_GAP = 30;        // extra spacing between obstacles beyond radii sum
-      const PLAYER_RADIUS = 20;           // collision radius of player (image 40x40)
-      const BOT_RADIUS = 12;              // approximate radius of bot (ellipse 24)
+      let CANVAS_W = window.innerWidth;
+      let CANVAS_H = window.innerHeight;
+      // --- Obstacle / sizing configuration (edit these to tweak quickly) ---
+      const OBSTACLE_COUNT = 8; // how many obstacles to place
+      const OBSTACLE_RADIUS = 60; // base radius of each obstacle (was 28)
+      const OBSTACLE_PLAYER_CLEAR = 3 * OBSTACLE_RADIUS; // min distance from player spawn
+      const OBSTACLE_MIN_GAP = 30; // extra spacing between obstacles beyond radii sum
+      const PLAYER_RADIUS = 20; // collision radius of player (image 40x40)
+      const BOT_RADIUS = 12; // approximate radius of bot (ellipse 24)
       // Manual key state (fix WASD not registering if canvas not focused)
-      const held: Record<string, boolean> = { w: false, a: false, s: false, d: false };
+      const held: Record<string, boolean> = {
+        w: false,
+        a: false,
+        s: false,
+        d: false,
+      };
       let escapePresses = 0;
       let lastEscapeTime = 0; // ms timestamp
       const downHandler = (e: KeyboardEvent) => {
         const k = e.key.toLowerCase();
-        if (k in held) { held[k] = true; e.preventDefault(); }
-        if (e.key === 'Escape') {
+        if (k in held) {
+          held[k] = true;
+          e.preventDefault();
+        }
+        if (e.key === "Escape") {
           const now = Date.now();
           // reset combo if too slow (>1500ms between presses)
           if (now - lastEscapeTime > 1500) escapePresses = 0;
@@ -91,26 +99,29 @@ export const SniperDemo: React.FC = () => {
           if (escapePresses >= 3) {
             // Exit game: navigate back or to home
             try {
-              router.push('/');
+              router.push("/");
             } catch {
-              router.push('/');
+              router.push("/");
             }
           }
         }
       };
       const upHandler = (e: KeyboardEvent) => {
         const k = e.key.toLowerCase();
-        if (k in held) { held[k] = false; e.preventDefault(); }
+        if (k in held) {
+          held[k] = false;
+          e.preventDefault();
+        }
       };
-      window.addEventListener('keydown', downHandler);
-      window.addEventListener('keyup', upHandler);
+      window.addEventListener("keydown", downHandler);
+      window.addEventListener("keyup", upHandler);
       // expose for cleanup
       (s as any)._downHandler = downHandler;
       (s as any)._upHandler = upHandler;
 
       // ===== Infinite obstacle chunk system =====
-      const CHUNK_SIZE = 1200;                 // world size of each chunk
-      const OBSTACLES_PER_CHUNK = 10;          // how many obstacles per generated chunk
+      const CHUNK_SIZE = 1200; // world size of each chunk
+      const OBSTACLES_PER_CHUNK = 10; // how many obstacles per generated chunk
       const generatedChunks = new Set<string>();
 
       const chunkKey = (cx: number, cy: number) => `${cx},${cy}`;
@@ -123,15 +134,28 @@ export const SniperDemo: React.FC = () => {
         const top = cy * CHUNK_SIZE;
         let added = 0;
         let attempts = 0;
-        while (added < OBSTACLES_PER_CHUNK && attempts < OBSTACLES_PER_CHUNK * 25) {
+        while (
+          added < OBSTACLES_PER_CHUNK &&
+          attempts < OBSTACLES_PER_CHUNK * 25
+        ) {
           attempts++;
           const r = OBSTACLE_RADIUS;
           const x = left + s.random(r + 40, CHUNK_SIZE - r - 40);
           const y = top + s.random(r + 40, CHUNK_SIZE - r - 40);
           // Keep initial spawn area clearer for origin chunk
-          if (cx === 0 && cy === 0 && Math.hypot(x - player.x, y - player.y) < OBSTACLE_PLAYER_CLEAR) continue;
+          if (
+            cx === 0 &&
+            cy === 0 &&
+            Math.hypot(x - player.x, y - player.y) < OBSTACLE_PLAYER_CLEAR
+          )
+            continue;
           // Overlap avoidance
-          if (obstacles.some(o => Math.hypot(o.x - x, o.y - y) < o.r + r + OBSTACLE_MIN_GAP)) continue;
+          if (
+            obstacles.some(
+              (o) => Math.hypot(o.x - x, o.y - y) < o.r + r + OBSTACLE_MIN_GAP
+            )
+          )
+            continue;
           obstacles.push({ x, y, r });
           added++;
         }
@@ -148,15 +172,22 @@ export const SniperDemo: React.FC = () => {
       };
 
       // Helper: find a random point near a center not colliding with obstacles (for infinite world style)
-      const safeSpawn = (radius: number, cx = player?.x || 0, cy = player?.y || 0, spread = 600): { x: number; y: number } => {
+      const safeSpawn = (
+        radius: number,
+        cx = player?.x || 0,
+        cy = player?.y || 0,
+        spread = 600
+      ): { x: number; y: number } => {
         let attempts = 0;
         while (attempts < 800) {
           attempts++;
           const dist = s.random(radius, spread);
           const ang = s.random(s.TWO_PI);
-            const x = cx + Math.cos(ang) * dist;
-            const y = cy + Math.sin(ang) * dist;
-          const collision = obstacles.some(o => Math.hypot(o.x - x, o.y - y) < o.r + radius + 4);
+          const x = cx + Math.cos(ang) * dist;
+          const y = cy + Math.sin(ang) * dist;
+          const collision = obstacles.some(
+            (o) => Math.hypot(o.x - x, o.y - y) < o.r + radius + 4
+          );
           if (!collision) return { x, y };
         }
         return { x: cx, y: cy };
@@ -169,95 +200,102 @@ export const SniperDemo: React.FC = () => {
         return { x: worldX, y: worldY };
       };
 
+      s.setup = () => {
+        CANVAS_W = window.innerWidth;
+        CANVAS_H = window.innerHeight;
+        const c = s.createCanvas(CANVAS_W, CANVAS_H);
+        c.parent(containerRef.current!);
+        s.noSmooth();
 
-  s.setup = () => {
-  CANVAS_W = window.innerWidth;
-  CANVAS_H = window.innerHeight;
-  const c = s.createCanvas(CANVAS_W, CANVAS_H);
-  c.parent(containerRef.current!);
-  s.noSmooth();
+        // --- Create assets (player procedural + load spiker obstacle) ---
+        const g = s.createGraphics(40, 40);
+        g.clear(); // transparent background
 
-  // --- Create assets (player procedural + load spiker obstacle) ---
-  const g = s.createGraphics(40, 40);
-  g.clear(); // transparent background
+        // Colors
+        let fillColor = g.color(181, 152, 112); // brown fill
+        let strokeColor = g.color(80); // dark outline
+        let gunColor = g.color(50); // gun
 
-  // Colors
-  let fillColor = g.color(181, 152, 112); // brown fill
-  let strokeColor = g.color(80);          // dark outline
-  let gunColor = g.color(50);             // gun
+        // Bear head (3 circles)
+        g.stroke(strokeColor);
+        g.strokeWeight(1.5);
+        g.fill(fillColor);
 
-  // Bear head (3 circles)
-  g.stroke(strokeColor);
-  g.strokeWeight(1.5);
-  g.fill(fillColor);
+        g.ellipse(20, 25, 22, 22); // big head
+        g.ellipse(10, 15, 10, 10); // left ear
+        g.ellipse(30, 15, 10, 10); // right ear
 
-  g.ellipse(20, 25, 22, 22); // big head
-  g.ellipse(10, 15, 10, 10); // left ear
-  g.ellipse(30, 15, 10, 10); // right ear
+        // Gun
+        g.noStroke();
+        g.fill(gunColor);
+        g.rect(18.5, 8, 3, 15); // shaft
+        g.rect(19.2, 0, 1.6, 8); // barrel
+        g.beginShape(); // stock
+        g.vertex(18, 23);
+        g.vertex(22, 23);
+        g.vertex(23, 28);
+        g.vertex(20, 30);
+        g.vertex(17, 27);
+        g.endShape(g.CLOSE);
 
-  // Gun
-  g.noStroke();
-  g.fill(gunColor);
-  g.rect(18.5, 8, 3, 15);    // shaft
-  g.rect(19.2, 0, 1.6, 8);   // barrel
-  g.beginShape();            // stock
-  g.vertex(18, 23);
-  g.vertex(22, 23);
-  g.vertex(23, 28);
-  g.vertex(20, 30);
-  g.vertex(17, 27);
-  g.endShape(g.CLOSE);
+        // Store as image for later draw
+        playerImg = g.get() as p5.Image;
 
-  // Store as image for later draw
-  playerImg = g.get() as p5.Image;
+        // Player setup (temporary center, may be adjusted after obstacles)
+        player = {
+          x: 0,
+          y: 0,
+          alive: true,
+          isPlayer: true,
+        };
 
-  // Player setup (temporary center, may be adjusted after obstacles)
-  player = {
-    x: 0,
-    y: 0,
-    alive: true,
-    isPlayer: true,
-  };
+        // Initial chunks of obstacles around player origin
+        ensureChunksAroundPlayer();
 
-  // Initial chunks of obstacles around player origin
-  ensureChunksAroundPlayer();
+        // Ensure player is not inside an obstacle (if obstacles surround center)
+        if (
+          obstacles.some(
+            (o) =>
+              Math.hypot(o.x - player.x, o.y - player.y) <
+              o.r + PLAYER_RADIUS + 10
+          )
+        ) {
+          const pos = safeSpawn(PLAYER_RADIUS, player.x, player.y, 800);
+          player.x = pos.x;
+          player.y = pos.y;
+        }
 
-  // Ensure player is not inside an obstacle (if obstacles surround center)
-  if (obstacles.some(o => Math.hypot(o.x - player.x, o.y - player.y) < o.r + PLAYER_RADIUS + 10)) {
-    const pos = safeSpawn(PLAYER_RADIUS, player.x, player.y, 800);
-    player.x = pos.x; player.y = pos.y;
-  }
+        // Bots setup (spawn safely)
+        bots = [];
+        for (let i = 0; i < BOT_COUNT; i++) {
+          const pos = safeSpawn(BOT_RADIUS, player.x, player.y, 800);
+          bots.push({
+            x: pos.x,
+            y: pos.y,
+            cash: 1,
+            alive: true,
+            moveAngle: s.random(s.TWO_PI),
+            moveTimer: s.random(1, 3),
+            shootTimer: s.random(1, 5),
+          });
+        }
 
-  // Bots setup (spawn safely)
-  bots = [];
-  for (let i = 0; i < BOT_COUNT; i++) {
-    const pos = safeSpawn(BOT_RADIUS, player.x, player.y, 800);
-    bots.push({
-      x: pos.x,
-      y: pos.y,
-      cash: 1,
-      alive: true,
-      moveAngle: s.random(s.TWO_PI),
-      moveTimer: s.random(1, 3),
-      shootTimer: s.random(1, 5),
-    });
-  }
-
-  // Load spiker AFTER canvas (in case of hot reload). We'll lazy load; if not loaded yet we draw placeholder.
-  s.loadImage('/images/spiker.png', (img: p5.Image) => { spikerImg = img; });
-};
-
+        // Load spiker AFTER canvas (in case of hot reload). We'll lazy load; if not loaded yet we draw placeholder.
+        s.loadImage("/images/spiker.png", (img: p5.Image) => {
+          spikerImg = img;
+        });
+      };
 
       const handlePlayerMovement = () => {
         if (!player.alive) return;
         let dx = 0,
           dy = 0;
 
-  // WASD using manual held map (more reliable focus-independent)
-  if (held.w) dy -= 5;
-  if (held.s) dy += 5;
-  if (held.a) dx -= 5;
-  if (held.d) dx += 5;
+        // WASD using manual held map (more reliable focus-independent)
+        if (held.w) dy -= 5;
+        if (held.s) dy += 5;
+        if (held.a) dx -= 5;
+        if (held.d) dx += 5;
 
         // Arrow keys as backup
         if (s.keyIsDown(s.UP_ARROW)) dy -= 5;
@@ -271,9 +309,9 @@ export const SniperDemo: React.FC = () => {
           dy *= Math.SQRT1_2;
         }
 
-  const newX = player.x + dx;
-  const newY = player.y + dy;
-  const radius = PLAYER_RADIUS; // player collision radius
+        const newX = player.x + dx;
+        const newY = player.y + dy;
+        const radius = PLAYER_RADIUS; // player collision radius
         // Check collision with obstacles; allow axis separation (slide along walls)
         let blockedX = false;
         let blockedY = false;
@@ -281,7 +319,7 @@ export const SniperDemo: React.FC = () => {
           const distNew = Math.hypot(o.x - newX, o.y - player.y);
           if (distNew < o.r + radius) blockedX = true;
           const distNewY = Math.hypot(o.x - player.x, o.y - newY);
-            if (distNewY < o.r + radius) blockedY = true;
+          if (distNewY < o.r + radius) blockedY = true;
         }
         if (!blockedX) player.x = newX;
         if (!blockedY) player.y = newY;
@@ -302,7 +340,8 @@ export const SniperDemo: React.FC = () => {
           const dToPlayer = Math.hypot(bot.x - player.x, bot.y - player.y);
           if (dToPlayer > 1800) {
             const pos = safeSpawn(BOT_RADIUS, player.x, player.y, 900);
-            bot.x = pos.x; bot.y = pos.y;
+            bot.x = pos.x;
+            bot.y = pos.y;
           }
           bot.shootTimer = (bot.shootTimer || 0) - dt;
           if (bot.shootTimer <= 0) {
@@ -329,19 +368,22 @@ export const SniperDemo: React.FC = () => {
           b.vy *= 0.98;
           b.age += 1 / 60;
           // Despawn bullets after age or if far from player (in infinite world)
-          if (
-            b.age > 5 ||
-            Math.hypot(b.x - player.x, b.y - player.y) > 3000
-          ) {
+          if (b.age > 5 || Math.hypot(b.x - player.x, b.y - player.y) > 3000) {
             bullets.splice(i, 1);
             continue;
           }
           // obstacle collision (simple circle collision)
           let hitObstacle = false;
           for (const o of obstacles) {
-            if (Math.hypot(b.x - o.x, b.y - o.y) < o.r) { hitObstacle = true; break; }
+            if (Math.hypot(b.x - o.x, b.y - o.y) < o.r) {
+              hitObstacle = true;
+              break;
+            }
           }
-          if (hitObstacle) { bullets.splice(i,1); continue; }
+          if (hitObstacle) {
+            bullets.splice(i, 1);
+            continue;
+          }
           // collision with bots (player-owned bullets)
           if ((b.owner as any).isPlayer) {
             for (const bot of bots) {
@@ -438,7 +480,7 @@ export const SniperDemo: React.FC = () => {
         }
       };
 
-  const drawEntities = () => {
+      const drawEntities = () => {
         // Obstacles (draw beneath dynamic entities but above ground)
         for (const o of obstacles) {
           s.push();
@@ -477,7 +519,7 @@ export const SniperDemo: React.FC = () => {
           s.translate(player.x, player.y); // move origin to player
           s.rotate(angle + s.HALF_PI); // rotate towards cursor
           s.imageMode(s.CENTER);
-          s.image(playerImg, 0, 0, 40, 40);
+          s.image(playerImg, 0, 0, 80, 80);
           s.pop();
 
           // Player labels (not rotated)
@@ -513,7 +555,8 @@ export const SniperDemo: React.FC = () => {
             const x = gx * GS;
             const y = gy * GS;
             const parity = (gx + gy) & 1;
-            if (parity === 0) s.fill(70, 140, 70); else s.fill(60, 120, 60);
+            if (parity === 0) s.fill(70, 140, 70);
+            else s.fill(60, 120, 60);
             s.noStroke();
             s.rect(x, y, GS, GS);
           }
@@ -534,8 +577,8 @@ export const SniperDemo: React.FC = () => {
       s.draw = () => {
         s.background(50, 110, 50);
 
-  handlePlayerMovement();
-  ensureChunksAroundPlayer();
+        handlePlayerMovement();
+        ensureChunksAroundPlayer();
         updateBots();
         updateBullets();
         updatePlayerHit();
@@ -602,9 +645,11 @@ export const SniperDemo: React.FC = () => {
     return () => {
       sketchRef.current?.remove();
       sketchRef.current = null;
-  // Clean listeners (in case effect re-runs)
-  if ((sketch as any)?._downHandler) window.removeEventListener('keydown', (sketch as any)._downHandler);
-  if ((sketch as any)?._upHandler) window.removeEventListener('keyup', (sketch as any)._upHandler);
+      // Clean listeners (in case effect re-runs)
+      if ((sketch as any)?._downHandler)
+        window.removeEventListener("keydown", (sketch as any)._downHandler);
+      if ((sketch as any)?._upHandler)
+        window.removeEventListener("keyup", (sketch as any)._upHandler);
     };
   }, []);
 
